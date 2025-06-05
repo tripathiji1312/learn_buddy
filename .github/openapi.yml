@@ -1,0 +1,56 @@
+# This tells tools which version of the OpenAPI "menu design" you are using.
+openapi: 3.0.0
+
+# This is the cover of your menu. The restaurant's name and menu edition.
+info:
+  title: LearnBuddy API
+  version: 1.0.0
+
+# This starts the main list of all the things a waiter can request from the kitchen.
+paths:
+  # This is the first "dish" on the menu. It's requested by going to the
+  # URL path "/users/register".
+  /users/register:
+    # This specifies the METHOD. Think of it as the way the order is placed.
+    # 'post' is used when you are CREATING something new (a new user).
+    # Other methods are 'get' (to read data), 'put' (to update data), etc.
+    post:
+      # A short, friendly name for the dish on the menu.
+      summary: Register a new user
+
+      # This section describes the ingredients the waiter MUST bring to the kitchen.
+      requestBody:
+        description: The user details needed to create a new account.
+        required: true # The order cannot be placed without these details.
+        
+        # This specifies the format of the ingredients: a JSON object.
+        content:
+          application/json:
+            # This is the precise recipe for the ingredients.
+            schema:
+              type: object
+              properties:
+                # The kitchen needs a 'username' that is a string of text.
+                username:
+                  type: string
+                  example: "new_student" # An example for the waiter to see.
+                # It also needs an 'email'.
+                email:
+                  type: string
+                  example: "student@example.com"
+                # And a 'password'.
+                password:
+                  type: string
+                  example: "strongpassword123"
+
+      # This section describes what the kitchen (your backend) will send back.
+      responses:
+        # This describes the "successful" outcome. 
+        # '201 Created' is the standard code for "Successfully created a new thing".
+        '201':
+          description: User created successfully. The order was a success.
+
+        # This describes a potential "error" outcome.
+        # '400 Bad Request' is a standard code for "The waiter gave me a bad order".
+        '400':
+          description: Invalid input (e.g., email already exists, password too short).
