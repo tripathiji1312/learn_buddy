@@ -1,0 +1,37 @@
+version: '3.8'
+
+# This defines the services (containers) that make up your app.
+services:
+  # This is the service for your Python backend.
+  backend:
+    build: . # Tells Docker to build it from the Dockerfile in this folder.
+    ports:
+      # Maps port 8000 on your computer to port 8000 inside the container.
+      - "8000:8000"
+    environment:
+      # This passes an environment variable to your code so it knows how to find the database.
+      - DATABASE_URL=postgresql://user:password@db:5432/learnbuddy
+    volumes:
+      # This syncs your local code with the code inside the container.
+      # It means you can change your code and not have to rebuild the container.
+      - .:/app
+    depends_on:
+      - db # Tells this service to wait until the 'db' service is ready.
+
+  # This is the service for your PostgreSQL database.
+  db:
+    image: postgres:14-alpine # Uses the official Postgres image from Docker Hub.
+    environment:
+      # Sets up the database with a default user, password, and database name.
+      # IMPORTANT: For a real project, these would be secrets!
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=learnbuddy
+    volumes:
+      # This part is crucial. It creates a special volume to make sure your
+      # database data is SAVED even if you stop and restart the container.
+      - postgres_data:/var/lib/postgresql/data/
+
+# This declares the special volume for the database data.
+volumes:
+  postgres_data:
