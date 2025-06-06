@@ -18,7 +18,7 @@ def test_check_semantic_similarity_numeric_match():
     for a perfect numeric match.
     """
     is_correct, score = check_semantic_similarity(
-        user_answer="I am 100% sure the answer is 50",
+        user_answer="The answer is 50",  # More direct answer
         correct_answer="50"
     )
     assert is_correct is True
@@ -44,3 +44,28 @@ def test_check_semantic_similarity_text_mismatch():
     )
     assert is_correct is False
     assert score < 0.6 # The score should be below our threshold
+
+def test_check_semantic_similarity_numeric_with_distractors():
+    """
+    Tests that the semantic checker finds the correct number
+    even when there are other numbers in the text.
+    """
+    is_correct, score = check_semantic_similarity(
+        user_answer="I am 100% sure the answer is 50",
+        correct_answer="50"
+    )
+    assert is_correct is True
+    assert score == 1.0
+
+def test_check_semantic_similarity_numeric_no_match():
+    """
+    Tests that when the correct number isn't found, 
+    it falls back to semantic matching.
+    """
+    is_correct, score = check_semantic_similarity(
+        user_answer="I think it's around seventy-five",
+        correct_answer="50"
+    )
+    # This should use semantic matching and likely fail
+    assert is_correct is False
+    assert score < 1.0

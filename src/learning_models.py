@@ -40,8 +40,19 @@ def load_similarity_model():
 similarity_model = load_similarity_model()
 
 
-def extract_number(text: str) -> str:
-    """Finds the first number in a string."""
+def extract_number(text: str, target_number: str = None) -> str:
+    """
+    Finds numbers in a string. If target_number is provided, 
+    looks for that specific number first, otherwise returns the first number found.
+    """
+    if target_number:
+        # Look for the specific target number as a whole word
+        pattern = r'\b' + re.escape(target_number) + r'\b'
+        match = re.search(pattern, text)
+        if match:
+            return match.group(0)
+    
+    # Fallback: find the first number
     match = re.search(r'\d+', text)
     if match:
         return match.group(0)
@@ -55,7 +66,7 @@ def check_semantic_similarity(user_answer: str, correct_answer: str) -> tuple[bo
     """
     # Direct number matching for numeric answers
     if correct_answer.isdigit():
-        extracted_number = extract_number(user_answer)
+        extracted_number = extract_number(user_answer, correct_answer)
         if extracted_number and extracted_number == correct_answer:
             return True, 1.0
     
