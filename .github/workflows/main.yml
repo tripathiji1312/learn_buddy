@@ -1,18 +1,42 @@
-# .github/workflows/main.yml
-name: Backend CI
-on: [push]
+# Name of the workflow, which will be displayed on the GitHub Actions tab.
+name: Run Python Tests
+
+# This specifies when the workflow should run.
+on:
+  push:
+    branches: [ main ] # Run on every push to the main branch
+  pull_request:
+    branches: [ main ] # Run on every pull request targeting the main branch
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
 jobs:
-  build:
+  # This workflow contains a single job called "build-and-test"
+  build-and-test:
+    # The type of virtual machine to run the job on. 'ubuntu-latest' is the standard.
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job.
     steps:
-    - uses: actions/checkout@v3
+    # Step 1: Check out your repository code so the workflow can access it.
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up the Python environment.
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.10' # Use the same version as your Dockerfile
+
+    # Step 3: Install all the project dependencies from requirements.txt.
+    # This includes our application libraries and the 'pytest' library.
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Run tests (e.g., with pytest)
-      run: pytest
+
+    # Step 4: Run the tests using pytest.
+    # Pytest will automatically discover and run all files named test_*.py.
+    # The '--ignore=model_cache' flag tells pytest not to look inside that folder.
+    - name: Run tests
+      run: |
+        pytest --ignore=model_cache

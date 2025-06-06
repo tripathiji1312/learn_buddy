@@ -1,30 +1,39 @@
--- This table will store user login info and their experience points (XP).
+-- This table stores user login info and their experience points (XP).
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY, -- Gives each user a unique, auto-incrementing number.
-    username VARCHAR(50) UNIQUE NOT NULL, -- User's name, must be unique.
-    email VARCHAR(255) UNIQUE NOT NULL, -- User's email, must be unique.
-    password_hash VARCHAR(255) NOT NULL, -- IMPORTANT: We never store raw passwords.
-    xp INT DEFAULT 0, -- User's experience points, starts at 0.
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    xp INT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- This table will store questions for the lessons.
+-- This table stores questions for the lessons.
+-- It is MODIFIED to include a text-based answer for our NLP model.
 CREATE TABLE questions (
     id SERIAL PRIMARY KEY,
-    lesson_id INT NOT NULL, -- Which lesson this question belongs to.
-    content TEXT NOT NULL, -- The text of the question (e.g., "What is 2+2?").
-    difficulty_level INT NOT NULL -- A number, e.g., 1=easy, 5=hard.
+    lesson_id INT NOT NULL,
+    content TEXT NOT NULL,
+    difficulty_level INT NOT NULL CHECK (difficulty_level BETWEEN 1 AND 5),
+    correct_answer_text VARCHAR(255) NOT NULL
 );
 
--- This table is CRITICAL. It tracks every answer a user gives.
--- This data will power your AI engine later.
+-- This table tracks every answer a user gives.
 CREATE TABLE user_progress (
     id SERIAL PRIMARY KEY,
-    -- 'FOREIGN KEY' creates a link to the 'users' table.
-    -- If a user is deleted, their progress can be handled automatically.
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    -- This links to the specific question that was answered.
     question_id INT REFERENCES questions(id) ON DELETE CASCADE,
-    is_correct BOOLEAN NOT NULL, -- Did the user get it right? (True/False)
+    is_correct BOOLEAN NOT NULL,
     answered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- NEW TABLE: Stores the state of our Reinforcement Learning model.
+-- This is the "memory" for the AI to learn about each user.
+CREATE TABLE bandit_state (
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    lesson_id INT NOT NULL,
+    difficulty_level INT NOT NULL,
+    times_selected INT DEFAULT 1,
+    successful_outcomes INT DEFAULT 0,
+    PRIMARY KEY (user_id, lesson_id, difficulty_level)
 );
