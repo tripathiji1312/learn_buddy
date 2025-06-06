@@ -55,42 +55,37 @@ def check_semantic_similarity(user_answer: str, correct_answer: str) -> tuple[bo
     Checks if a user's free-text answer is close enough to the correct answer.
     It now correctly uses a numeric matching shortcut before falling back to the AI model.
     """
-    # --- Shortcut for Numeric Answers ---
+    # --- Stage 1: Attempt Numeric Shortcut ---
     # First, check if the correct answer is purely a number.
     if correct_answer.isdigit():
-        # If so, try to find a number in the user's answer.
         extracted_number = _extract_number(user_answer)
-        # If we found a number and it's a perfect match, return immediately.
+        # If we found a number and it's a perfect match, we are done. Return immediately.
         if extracted_number and extracted_number == correct_answer:
             logging.info("Numeric shortcut successful.")
             return True, 1.0
 
-    # --- Fallback to AI Model ---
-    # If the numeric shortcut was not successful, proceed with the AI model.
+    # --- Stage 2: Attempt AI Model Similarity (if numeric shortcut failed) ---
     if similarity_model is not None:
         try:
             logging.info("Using AI model for similarity check.")
             embedding1 = similarity_model.encode(user_answer, convert_to_tensor=True)
             embedding2 = similarity_model.encode(correct_answer, convert_to_tensor=True)
             similarity_score = util.cos_sim(embedding1, embedding2).item()
-
             is_correct = similarity_score > 0.6
-            return is_correct, similarity_score
-
+            return is_correct, similarity_score # Return the AI's result immediately.
         except Exception as e:
-            logging.error(f"Error in semantic similarity check: {str(e)}")
-            # Fall through to the most basic comparison if the AI fails.
+            logging.error(f"Error during AI similarity check, proceeding to fallback: {e}")
+            # If the AI fails for any reason, we don't stop. We fall through to the final basic check.
 
-    # --- Final Fallback (if AI model is missing or fails) ---
+    # --- Stage 3: Final Fallback (if numeric shortcut failed AND AI failed or is unavailable) ---
     logging.warning("Falling back to basic string comparison.")
     user_answer_clean = user_answer.lower().strip()
     correct_answer_clean = correct_answer.lower().strip()
 
     if correct_answer_clean in user_answer_clean:
-        return True, 0.8 # A high score for a simple contains check
+        return True, 0.8  # A high score for a simple "contains" check
 
-    return False, 0.0
-
+    return False, 0.0 # If all checks fail, it's incorrect.
 
 def select_difficulty_epsilon_greedy(user_id: int, lesson_id: int) -> int:
     """
