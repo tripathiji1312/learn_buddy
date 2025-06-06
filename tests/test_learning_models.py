@@ -1,5 +1,5 @@
 import pytest
-from src.learning_models import _extract_number, check_semantic_similarity
+from src.learning_models import extract_number, check_semantic_similarity
 
 # Use @pytest.mark.parametrize to run the same test with different inputs
 @pytest.mark.parametrize("input_string, expected_output", [
@@ -10,7 +10,7 @@ from src.learning_models import _extract_number, check_semantic_similarity
 ])
 def test_extract_number(input_string, expected_output):
     """Tests the number extraction helper function with various inputs."""
-    assert _extract_number(input_string) == expected_output
+    assert extract_number(input_string) == expected_output
 
 def test_check_semantic_similarity_numeric_match():
     """
