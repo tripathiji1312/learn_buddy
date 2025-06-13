@@ -1,197 +1,125 @@
-# Learn Buddy
+# LearnBuddy - Open Source Adaptive Learning Platform
 
+ <!-- It's highly recommended to create a hero image/logo and upload it -->
 
-Your workflow is simple:
-1.  Start the backend with one command.
-2.  Send requests to the API endpoints listed below.
-3.  Receive JSON data back and use it to build a beautiful, responsive user experience.
+**LearnBuddy is a free, open-source, AI-driven adaptive learning platform dedicated to making personalized education accessible to every child.**
 
-## ✅ Prerequisites
+Our mission is to build a tool that is not only intelligent and engaging but is also designed with inclusivity at its core. This project is for learners, educators, developers, and anyone passionate about the future of education.
 
-You only need two pieces of software installed on your machine:
-1.  **Docker**
-2.  **Docker Compose**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Discord](https://img.shields.io/discord/your-discord-id?label=Join%20our%20Discord&logo=discord)](https://discord.gg/your-invite-link)
+[![GitHub contributors](https://img.shields.io/github/contributors/your-username/learnbuddy.svg)](https://GitHub.com/your-username/learnbuddy/graphs/contributors/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-(You do **not** need Python, PostgreSQL, or any other libraries installed on your host machine. Docker handles everything!)
+---
 
-## 🚀 One-Step Quick Start
+## ✨ Vision
 
-This is the only command you need to run the entire backend system. Open your terminal in the project's root directory and run:
+In a world of diverse learning needs, one-size-fits-all education falls short. LearnBuddy was created to change that. We envision a future where every child, regardless of their physical, sensory, or cognitive abilities, has free access to a personal AI tutor that understands their pace, adapts to their style, and makes learning a joyful adventure.
 
-```bash
-docker-compose up --build -d
-```
+This is a community-driven project. We believe that by working together, we can build a powerful, free alternative to commercial learning platforms.
 
-**What this command does:**
-*   `--build`: Builds the Docker container for the backend, installing all dependencies (it will be slow the very first time, then fast).
-*   `-d`: Runs the containers in "detached" mode so they run in the background.
+## 🚀 Key Features
 
-### How to Verify It's Working
+*   **🧠 Adaptive AI Engine**: A reinforcement learning model adapts question difficulty in real-time, ensuring every learner is perfectly challenged.
+*   **🎮 Gamified Experience**: Learners earn XP, unlock achievements, and maintain "streaks," transforming learning into a motivating game.
+*   **♿ Accessibility First**: Built from the ground up for universal access.
+    *   **Interface**: High-contrast themes, adjustable text size, and dyslexia-friendly fonts.
+    *   **Input**: Full keyboard navigation, voice command compatibility, and support for switch control devices.
+    *   **Content**: Adjustable pacing, audio speed controls, and easy prompt repetition.
+*   **🤖 NLP-Powered Evaluation**: Uses Sentence-Transformers to understand the semantic meaning of answers, allowing for flexible and intelligent grading.
+*   **🛡️ Secure Admin Panel**: A comprehensive dashboard for platform management, user administration, and content curation.
+*   **📦 Fully Containerized**: Easy to set up and deploy locally with Docker and Docker Compose.
 
-After running the command, wait about 30 seconds for the server to start up. Then, you can check that everything is running correctly in two ways:
+---
 
-1.  **Check the Containers:** Run `docker-compose ps`. You should see two services, `learnbuddy-backend-1` and `learnbuddy-db-1`, both with a `STATUS` of `running` or `Up`.
-2.  **Check the API Docs:** Open your web browser and go to **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)**. If you see the FastAPI documentation page, the server is live and ready for requests.
+## ❤️ Why Contribute?
 
-## 🔧 Essential Developer Commands
+Contributing to LearnBuddy means you're helping to build a more equitable and effective educational future. Whether you're a seasoned developer, a UX designer, an educator, or just starting your coding journey, your input is valuable.
 
-You will use these commands frequently during development.
+*   **Make a Real-World Impact**: Your code will directly help children learn more effectively.
+*   **Work with Modern Tech**: Get hands-on experience with FastAPI, PostgreSQL, AI/ML models, and Docker.
+*   **Join a Welcoming Community**: We are committed to creating a supportive and collaborative environment.
+*   **Build Your Portfolio**: Showcase your skills on a meaningful open-source project.
 
-*   **Start everything:**
+---
+
+## 🚀 Getting Started
+
+Follow these instructions to get the project up and running locally.
+
+### Prerequisites
+
+*   **Docker & Docker Compose**: [Install Docker Desktop](https://www.docker.com/products/docker-desktop).
+*   **Git**: For cloning the repository.
+
+### Installation & Setup
+
+1.  **Fork & Clone the Repository**
+    First, fork the project to your own GitHub account. Then, clone your fork locally:
+    ```bash
+    git clone https://github.com/YOUR-USERNAME/learnbuddy.git
+    cd learnbuddy
+    ```
+
+2.  **Build and Run the Containers**
+    This command will build the backend image and start the backend and database containers.
     ```bash
     docker-compose up --build -d
     ```
-*   **See live logs (for debugging):**
+
+3.  **Seed the Database**
+    This crucial step creates the database tables and populates them with sample data and the default admin user.
     ```bash
-    docker-compose logs -f backend
+    docker-compose run --rm backend python scripts/seed_db.py
     ```
-*   **Stop everything:**
-    ```bash
-    docker-compose down
-    ```
-*   **Reset the database to a clean state:**
-    ```bash
-    docker-compose exec backend python scripts/seed_db.py
-    ```
+    You should see a "Database Seed Successful" message.
 
-## 🔑 The Authentication Flow
+4.  **Start the Frontend**
+    The easiest way to serve the frontend is with the **Live Server** extension in VS Code.
+    *   Install the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension.
+    *   Right-click on `index.html` and select **"Open with Live Server"**.
+    *   Your browser will open to `http://127.0.0.1:5500`.
 
-Our API is secure. Users must sign up and log in to access the learning features. Here is the flow you will need to build in the UI:
+### Usage
 
-1.  **User Signs Up:** The user provides a username, email, and password. You send this to the `POST /signup` endpoint.
-2.  **User Logs In:** The user provides their username and password. You send this to the `POST /token` endpoint.
-3.  **Receive the Token:** The backend will send you back an `access_token` (a long string of characters).
-4.  **Store the Token:** You must store this token somewhere in the frontend (e.g., `localStorage`, a state management library like Redux/Zustand).
-5.  **Authorize Future Requests:** For every subsequent API call to a protected endpoint (like `/next_question`), you **must** include the token in the request headers like this:
-    *   **Header Name:** `Authorization`
-    *   **Header Value:** `Bearer <the_access_token_you_stored>`
-    *   *Example:* `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
-
-If the token is missing or invalid, the API will correctly send back a `401 Unauthorized` error.
-
-## 🧠 The API Endpoints
-
-This is your main reference guide. All requests and responses are in JSON format.
-
-### Authentication Endpoints
-
-These endpoints are for user management and are **not** protected.
-
----
-#### **1. Create a New User**
-*   **Endpoint:** `POST /signup`
-*   **Description:** Registers a new user in the system.
-*   **Request Body:**
-    ```json
-    {
-      "username": "new_user",
-      "email": "user@example.com",
-      "password": "a_strong_password"
-    }
-    ```
-*   **Success Response (201 Created):**
-    ```json
-    {
-      "id": 2,
-      "username": "new_user",
-      "email": "user@example.com"
-    }
-    ```
-*   **Failure Response (400 Bad Request):**
-    ```json
-    {
-      "detail": "Username or email already registered."
-    }
-    ```
-
----
-#### **2. User Login**
-*   **Endpoint:** `POST /token`
-*   **Description:** Authenticates a user and returns their access token.
-*   **Request Body:** This endpoint expects `x-www-form-urlencoded` data (a standard login form), not JSON.
-*   **Success Response (200 OK):**
-    ```json
-    {
-      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJuZXdfdXNlciIsImV4cCI6MTcxNzcwNzAwOX0.some_long_string",
-      "token_type": "bearer"
-    }
-    ```
-*   **Failure Response (401 Unauthorized):**
-    ```json
-    {
-      "detail": "Incorrect username or password"
-    }
-    ```
-
-### Learning Endpoints
-
-These endpoints are **protected**. They require the `Authorization: Bearer <token>` header.
-
----
-#### **3. Get Next Question**
-*   **Endpoint:** `POST /next_question`
-*   **Description:** Asks the AI for the next best question for the authenticated user.
-*   **Request Body:**
-    ```json
-    {
-      "lesson_id": 1
-    }
-    ```
-*   **Success Response (200 OK):**
-    ```json
-    {
-      "difficulty_level": 1,
-      "question_id": 3,
-      "question_text": "What is ten minus the number three?"
-    }
-    ```
-*   **Failure Response (404 Not Found):** Happens if the AI wants to give a harder question but we have no content for it.
-    ```json
-    {
-      "detail": "No questions found for this difficulty."
-    }
-    ```
-
----
-#### **4. Submit an Answer**
-*   **Endpoint:** `POST /submit_answer`
-*   **Description:** Submits a user's answer. The AI uses this to learn and update the user's XP.
-*   **Request Body:**
-    ```json
-    {
-      "lesson_id": 1,
-      "question_id": 3,
-      "difficulty_answered": 1,
-      "user_answer": "I'm pretty sure it's 7"
-    }
-    ```
-*   **Success Response (200 OK):**
-    ```json
-    {
-      "status": "Answer processed",
-      "is_correct": true,
-      "similarity_score": 0.95
-    }
-    ```
-
-## 💡 Troubleshooting Guide
-
-*   **Error: `permission denied` when running `docker-compose`**
-    *   **Problem:** Your user account doesn't have permission to use Docker.
-    *   **Fix (Linux):** Run `sudo usermod -aG docker ${USER}` once, then log out and log back in.
-
-*   **Error: `Port is already allocated`**
-    *   **Problem:** Another program is using port 8000 on your machine.
-    *   **Fix:** Stop the other program, or open `docker-compose.yml` and change the `ports` mapping from `"8000:8000"` to `"8001:8000"`. You would then access the API at `http://127.0.0.1:8001`.
-
-*   **Response: `{"detail": "Not authenticated"}`**
-    *   **Problem:** You tried to access a protected endpoint without a valid token.
-    *   **Fix:** Make sure you are attaching the `Authorization: Bearer <token>` header correctly to your request.
-
-*   **Response: `422 Unprocessable Entity`**
-    *   **Problem:** The JSON you sent in your request body is invalid.
-    *   **Fix:** Check your JSON for mistakes like missing double quotes on keys or trailing commas.
+*   **Learner App URL**: `http://127.0.0.1:5500/`
+    *   **Test User**: `testuser` / `testpass`
+*   **Admin Panel URL**: `http://127.0.0.1:5500/admin-login.html`
+    *   **Admin User**: `admin` / `adminpassword`
 
 ---
 
-Happy coding! Let me know if you have any questions.
+## 🤝 How to Contribute
+
+We welcome contributions of all kinds! Here’s how you can get started:
+
+1.  **Join the Discussion**: Check out the [Issues tab](https://github.com/your-username/learnbuddy/issues) to find discussions, feature requests, and known bugs.
+2.  **Pick an Issue**: Look for issues tagged with `good first issue` or `help wanted`.
+3.  **Follow the Contribution Workflow**:
+    *   Create a new branch for your feature (`git checkout -b feature/your-feature-name`).
+    *   Make your changes.
+    *   Commit your changes with a clear message (`git commit -m 'feat: Add your new feature'`).
+    *   Push to your branch (`git push origin feature/your-feature-name`).
+    *   Open a **Pull Request** back to the main repository.
+
+Please read our `CONTRIBUTING.md` file for more detailed guidelines on our code of conduct and the process for submitting pull requests.
+
+---
+
+## 🗺️ Project Roadmap
+
+We have big plans for LearnBuddy! Here's a look at what we're working on next. Contributions in these areas are highly encouraged!
+
+*   [ ] **More Learning Modules**: Add new subjects like Reading Comprehension, Science, and History.
+*   [ ] **Advanced Analytics**: Create detailed progress dashboards for parents and educators.
+*   [ ] **"Study Buddies" Feature**: Implement collaborative challenges for learners.
+*   [ ] **Internationalization (i18n)**: Translate the platform into multiple languages.
+*   [ ] **Enhanced AI**: Evolve the recommendation engine to suggest new topics and identify learning gaps.
+*   [ ] **CI/CD Pipeline**: Automate testing and deployment workflows.
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
