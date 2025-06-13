@@ -1,16 +1,17 @@
 const API_BASE_URL = 'http://127.0.0.1:8000';
-
+function getToken() { return localStorage.getItem('learnbuddy_token'); }
 function showStatus(message, isError = false) {
-    const statusEl = document.getElementById('status-notification');
-    if (!statusEl) return;
-
-    statusEl.textContent = message;
-    statusEl.className = isError ? 'status-error' : 'status-success';
-    statusEl.classList.add('show');
-
+    const el = document.getElementById('status-notification') || document.createElement('div');
+    if (!el.id) {
+        el.id = 'status-notification';
+        document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.className = 'status-notification';
+    el.classList.add(isError ? 'status-error' : 'status-success');
+    setTimeout(() => el.classList.add('show'), 10);
     setTimeout(() => {
-        statusEl.classList.remove('show');
+        el.classList.remove('show');
+        if(el.parentElement === document.body) setTimeout(() => document.body.removeChild(el), 500);
     }, 4000);
 }
-
-function getToken() { return localStorage.getItem('learnbuddy_token'); }

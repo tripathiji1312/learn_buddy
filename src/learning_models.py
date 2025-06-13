@@ -196,32 +196,45 @@ def check_semantic_similarity(user_answer: str, correct_answer: str) -> Tuple[bo
     return cached_similarity_check(user_answer.strip(), correct_answer.strip())
 
 class AdaptiveDifficultySelector:
-    """Improved difficulty selection with faster adaptation."""
+    """FIXED: Improved difficulty selection that can reach all 5 levels."""
     
     def __init__(self):
-        self.min_attempts_for_stability = 2  # Reduced even more for faster response
-        self.success_threshold_up = 0.75      # Move up if >75% success
-        self.success_threshold_down = 0.5     # Move down if <50% success (was 0.4)
+        self.min_attempts_for_stability = 3  # Minimum attempts before changing levels
+        self.success_threshold_up = 0.7       # Move up if ≥70% success (was 0.75)
+        self.success_threshold_down = 0.4     # Move down if <40% success  
         self.confidence_boost = 0.1           # Boost for consecutive successes
         self.struggle_penalty = 0.2           # Penalty for consecutive failures
+        self.exploration_rate = 0.1           # 10% chance to explore higher levels
     
-    def get_recent_performance(self, user_id: int, lesson_id: int, difficulty: int, limit: int = 7) -> Dict[str, Any]:
-        """Get recent performance metrics for faster decision making using existing user_progress table."""
+    def get_recent_performance(self, user_id: int, lesson_id: int, difficulty: int = None, limit: int = 8) -> Dict[str, Any]:
+        """Get recent performance metrics - looks at recent attempts across difficulties."""
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
-        # Get recent attempts for this specific difficulty using your existing schema
-        # We'll need to join with questions table to get difficulty level
-        cur.execute("""
-            SELECT up.is_correct, up.answered_at 
-            FROM user_progress up
-            JOIN questions q ON up.question_id = q.id
-            WHERE up.user_id = %s 
-              AND q.lesson_id = %s 
-              AND q.difficulty_level = %s 
-            ORDER BY up.answered_at DESC 
-            LIMIT %s
-        """, (user_id, lesson_id, difficulty, limit))
+        # Get recent attempts across ALL difficulty levels for this lesson
+        if difficulty is None:
+            # Get overall recent performance
+            cur.execute("""
+                SELECT up.is_correct, up.answered_at, q.difficulty_level
+                FROM user_progress up
+                JOIN questions q ON up.question_id = q.id
+                WHERE up.user_id = %s 
+                  AND q.lesson_id = %s 
+                ORDER BY up.answered_at DESC 
+                LIMIT %s
+            """, (user_id, lesson_id, limit))
+        else:
+            # Get performance for specific difficulty level
+            cur.execute("""
+                SELECT up.is_correct, up.answered_at, q.difficulty_level
+                FROM user_progress up
+                JOIN questions q ON up.question_id = q.id
+                WHERE up.user_id = %s 
+                  AND q.lesson_id = %s 
+                  AND q.difficulty_level = %s 
+                ORDER BY up.answered_at DESC 
+                LIMIT %s
+            """, (user_id, lesson_id, difficulty, limit))
         
         recent_attempts = cur.fetchall()
         cur.close()
@@ -253,11 +266,41 @@ class AdaptiveDifficultySelector:
             'recent_success_rate': recent_success_rate,
             'consecutive_correct': consecutive_correct,
             'consecutive_wrong': consecutive_wrong,
-            'total_attempts': len(recent_attempts)
+            'total_attempts': len(recent_attempts),
+            'attempts_data': recent_attempts
+        }
+    
+    def get_level_specific_performance(self, user_id: int, lesson_id: int, difficulty: int, limit: int = 5) -> Dict[str, Any]:
+        """Get performance for a specific difficulty level."""
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("""
+            SELECT up.is_correct, up.answered_at
+            FROM user_progress up
+            JOIN questions q ON up.question_id = q.id
+            WHERE up.user_id = %s 
+              AND q.lesson_id = %s 
+              AND q.difficulty_level = %s 
+            ORDER BY up.answered_at DESC 
+            LIMIT %s
+        """, (user_id, lesson_id, difficulty, limit))
+        
+        attempts = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        if not attempts:
+            return {'success_rate': 0, 'total_attempts': 0}
+        
+        successes = sum(1 for attempt in attempts if attempt['is_correct'])
+        return {
+            'success_rate': successes / len(attempts),
+            'total_attempts': len(attempts)
         }
     
     def select_difficulty(self, user_id: int, lesson_id: int) -> int:
-        """Fast, adaptive difficulty selection."""
+        """FIXED: Adaptive difficulty selection that can reach all 5 levels."""
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
@@ -280,18 +323,27 @@ class AdaptiveDifficultySelector:
         # Find current best performing difficulty
         current_best = self._find_current_best(states)
         
-        # Get recent performance for the current best difficulty
-        recent_perf = self.get_recent_performance(user_id, lesson_id, current_best)
+        # Get recent performance across all difficulties
+        recent_perf = self.get_recent_performance(user_id, lesson_id, difficulty=None)
         
-        # Make fast adaptation decision
-        new_difficulty = self._make_adaptation_decision(current_best, recent_perf, states)
+        if recent_perf['total_attempts'] == 0:
+            logging.info(f"No recent attempts found for user {user_id}, lesson {lesson_id}. Starting at level 1")
+            return 1
         
-        logging.info(f"User {user_id}: Current best {current_best}, Recent performance: {recent_perf['recent_success_rate']:.2f}, Selected: {new_difficulty}")
+        # Get performance for current difficulty level specifically
+        current_level_perf = self.get_level_specific_performance(user_id, lesson_id, current_best)
+        
+        # Make adaptation decision
+        new_difficulty = self._make_adaptation_decision(current_best, recent_perf, current_level_perf, states)
+        
+        logging.info(f"User {user_id}: Current best {current_best}, Recent success rate: {recent_perf['recent_success_rate']:.2f}, "
+                    f"Current level attempts: {current_level_perf['total_attempts']}, "
+                    f"Current level success: {current_level_perf['success_rate']:.2f}, Selected: {new_difficulty}")
         
         return new_difficulty
     
     def _find_current_best(self, states) -> int:
-        """Find the best performing difficulty level."""
+        """Find the best performing difficulty level with better logic."""
         best_difficulty = 1
         best_score = -1
         
@@ -304,8 +356,10 @@ class AdaptiveDifficultySelector:
                 
             success_rate = state['successful_outcomes'] / state['times_selected']
             
-            # Prefer higher difficulties with similar success rates
-            score = success_rate + (level - 1) * 0.1
+            # FIXED: Better scoring that doesn't over-penalize higher levels
+            # Only add small preference for higher levels if success rates are close
+            level_bonus = (level - 1) * 0.05  # Reduced from 0.1
+            score = success_rate + level_bonus
             
             if score > best_score:
                 best_score = score
@@ -313,74 +367,87 @@ class AdaptiveDifficultySelector:
         
         return best_difficulty
     
-    def _make_adaptation_decision(self, current_difficulty: int, recent_perf: Dict[str, Any], states) -> int:
-        """Make quick adaptation decisions based on recent performance."""
+    def _make_adaptation_decision(self, current_difficulty: int, recent_perf: Dict[str, Any], 
+                                 current_level_perf: Dict[str, Any], states) -> int:
+        """FIXED: Better adaptation logic that allows reaching level 5."""
         success_rate = recent_perf['recent_success_rate']
         consecutive_correct = recent_perf['consecutive_correct']
         consecutive_wrong = recent_perf['consecutive_wrong']
         total_attempts = recent_perf['total_attempts']
         
+        current_level_success = current_level_perf['success_rate']
+        current_level_attempts = current_level_perf['total_attempts']
+        
         # AGGRESSIVE downward adjustment for struggling users
-        if consecutive_wrong >= 2:
-            # Drop more aggressively based on how many wrong answers
-            if consecutive_wrong >= 4:
-                # Drop by 2 levels for severe struggling
-                new_level = max(current_difficulty - 2, 1)
-                logging.info(f"SEVERE STRUGGLE: Dropping 2 levels due to {consecutive_wrong} consecutive wrong answers")
-                return new_level
-            elif consecutive_wrong >= 3:
-                # Drop by 1-2 levels depending on current difficulty
-                drop_amount = 2 if current_difficulty > 3 else 1
-                new_level = max(current_difficulty - drop_amount, 1)
-                logging.info(f"MAJOR STRUGGLE: Dropping {drop_amount} levels due to {consecutive_wrong} consecutive wrong answers")
-                return new_level
-            else:  # 2 consecutive wrong
-                new_level = max(current_difficulty - 1, 1)
-                logging.info(f"STRUGGLING: Dropping 1 level due to {consecutive_wrong} consecutive wrong answers")
-                return new_level
-        
-        # Also check overall success rate for additional dropping
-        if total_attempts >= 3 and success_rate <= 0.2:  # 20% or less success rate
-            new_level = max(current_difficulty - 1, 1)
-            logging.info(f"LOW SUCCESS RATE: Dropping due to {success_rate:.1%} success rate")
+        if consecutive_wrong >= 3:
+            drop_amount = min(2, current_difficulty - 1)  # Drop 1-2 levels
+            new_level = max(current_difficulty - drop_amount, 1)
+            logging.info(f"STRUGGLING: Dropping {drop_amount} levels due to {consecutive_wrong} consecutive wrong")
             return new_level
         
-        # Check for moderate struggling (success rate between 20-40%)
-        if total_attempts >= 4 and success_rate <= 0.4 and current_difficulty > 1:
+        # Drop for consistent poor performance
+        if total_attempts >= 4 and success_rate <= 0.3:
             new_level = max(current_difficulty - 1, 1)
-            logging.info(f"MODERATE STRUGGLE: Dropping due to {success_rate:.1%} success rate")
+            logging.info(f"LOW SUCCESS RATE: Dropping due to {success_rate:.1%} overall success")
             return new_level
         
-        # Fast upward progression for high performers
-        if consecutive_correct >= 3 and success_rate >= self.success_threshold_up:
+        # FIXED: More aggressive upward progression
+        # Promote based on consecutive correct answers (faster progression)
+        if consecutive_correct >= 2 and current_difficulty < 5:  # Reduced from 3
+            if success_rate >= 0.6:  # Reduced from 0.75
+                new_level = min(current_difficulty + 1, 5)
+                logging.info(f"FAST PROMOTION: {consecutive_correct} consecutive correct, success rate {success_rate:.1%}")
+                return new_level
+        
+        # FIXED: Level-specific performance check for promotion
+        if current_level_attempts >= self.min_attempts_for_stability and current_difficulty < 5:
+            if current_level_success >= self.success_threshold_up:  # 70% success at current level
+                new_level = min(current_difficulty + 1, 5)
+                logging.info(f"LEVEL MASTERY: Promoting from {current_difficulty} to {new_level}, "
+                           f"success rate at current level: {current_level_success:.1%}")
+                return new_level
+        
+        # FIXED: Exploration mechanism - occasionally try higher levels
+        if (current_difficulty < 5 and 
+            total_attempts >= 5 and 
+            success_rate >= 0.6 and 
+            random.random() < self.exploration_rate):
             new_level = min(current_difficulty + 1, 5)
-            logging.info(f"PROMOTING: Due to {consecutive_correct} consecutive correct answers")
+            logging.info(f"EXPLORATION: Trying level {new_level} with {success_rate:.1%} success rate")
             return new_level
         
-        # Gradual exploration for stable performance
-        if total_attempts >= self.min_attempts_for_stability:
-            if success_rate > 0.8 and current_difficulty < 5:
-                # Try next level with high confidence
-                logging.info(f"GRADUAL PROMOTION: High success rate {success_rate:.1%}")
-                return current_difficulty + 1
-            elif success_rate < 0.5 and current_difficulty > 1:
-                # Step down for poor performance
-                logging.info(f"GRADUAL DEMOTION: Low success rate {success_rate:.1%}")
-                return current_difficulty - 1
+        # FIXED: Better stability check - don't drop too quickly
+        if (total_attempts >= self.min_attempts_for_stability and 
+            current_level_success < self.success_threshold_down and 
+            current_difficulty > 1):
+            new_level = current_difficulty - 1
+            logging.info(f"DEMOTION: Dropping to {new_level}, current level success: {current_level_success:.1%}")
+            return new_level
         
-        # Stay at current level if performance is stable
-        logging.info(f"STAYING: Current level {current_difficulty}, success rate {success_rate:.1%}")
+        # Stay at current level
+        logging.info(f"STAYING: Level {current_difficulty}, overall success: {success_rate:.1%}, "
+                    f"current level success: {current_level_success:.1%}")
         return current_difficulty
 
 # Global instance
 difficulty_selector = AdaptiveDifficultySelector()
 
 def select_difficulty_epsilon_greedy(user_id: int, lesson_id: int) -> int:
-    """Improved difficulty selection with faster adaptation."""
-    return difficulty_selector.select_difficulty(user_id, lesson_id)
+    """Improved difficulty selection with faster adaptation and debugging."""
+    try:
+        selected_difficulty = difficulty_selector.select_difficulty(user_id, lesson_id)
+        
+        # Additional debug logging
+        logging.info(f"DIFFICULTY SELECTOR DEBUG: User {user_id}, Lesson {lesson_id}, Selected: {selected_difficulty}")
+        
+        return selected_difficulty
+    except Exception as e:
+        logging.error(f"Error in difficulty selection: {e}")
+        # Fallback to level 1 if there's an error
+        return 1
 
 def update_bandit_state(user_id: int, lesson_id: int, difficulty: int, was_correct: bool):
-    """Enhanced bandit state update - now works with existing user_progress table."""
+    """Enhanced bandit state update."""
     conn = get_db_connection()
     cur = conn.cursor()
     reward = 1 if was_correct else 0
@@ -395,15 +462,12 @@ def update_bandit_state(user_id: int, lesson_id: int, difficulty: int, was_corre
             successful_outcomes = bandit_state.successful_outcomes + %s
     """, (user_id, lesson_id, difficulty, reward, reward))
 
-    # Note: Individual attempts are already tracked in your user_progress table
-    # when you insert the user's answer to a specific question
-
     conn.commit()
     cur.close()
     conn.close()
 
 def get_user_learning_stats(user_id: int, lesson_id: int) -> Dict[str, Any]:
-    """Get comprehensive learning statistics using existing user_progress table."""
+    """Get comprehensive learning statistics."""
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     

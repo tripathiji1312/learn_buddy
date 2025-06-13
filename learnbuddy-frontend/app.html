@@ -7,55 +7,76 @@
     <title>Quest Hub - LearnBuddy</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Lexend:wght@400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="app-body">
-    <header class="main-header">
-        <nav class="navbar">
-            <a href="app.html" class="nav-logo">LearnBuddy</a>
-            <button id="logout-btn" class="btn btn-secondary btn-small">Log Out</button>
-        </nav>
-    </header>
-
-    <main id="app-main-content">
-        <!-- The Dashboard View -->
-        <div id="dashboard-view">
-            <div class="glass-card mission-briefing animate-on-load">
-                <h2 id="welcome-message">Your Next Quest Awaits!</h2>
-                <p>Buddy has analyzed your progress and prepared a brand new challenge. Are you ready?</p>
-                <button id="start-lesson-btn" class="btn btn-primary btn-large">Begin Quest!</button>
+<body id="app-body">
+    <aside class="control-panel">
+        <h2 class="panel-title">Atelier</h2>
+        <div class="panel-section">
+            <h3 class="panel-subtitle">Display</h3><label class="a11y-label" for="theme-selector">Color
+                Palette</label><select id="theme-selector" class="theme-selector">
+                <option value="theme-lumina">Lumina</option>
+                <option value="theme-solar">Solar</option>
+                <option value="theme-mono">Monochrome</option>
+            </select>
+        </div>
+        <div class="panel-section">
+            <h3 class="panel-subtitle">Typography</h3><label class="a11y-label">Font Size</label>
+            <div class="button-group"><button class="a11y-btn" data-action="decrease-font"
+                    aria-label="Decrease text size">A-</button><button class="a11y-btn" data-action="increase-font"
+                    aria-label="Increase text size">A+</button></div>
+            <div class="toggle-container"><label class="a11y-label" for="font-switch">Readable Font</label>
+                <div class="toggle-switch"><input type="checkbox" id="font-switch" class="toggle-switch-checkbox"
+                        data-action="toggle-font"><label class="toggle-switch-label" for="font-switch"><span
+                            class="toggle-switch-inner"></span><span class="toggle-switch-switch"></span></label></div>
             </div>
         </div>
-
-        <!-- The Lesson View - This is completely hidden until the quest begins -->
-        <div id="lesson-view" class="hidden">
-            <div class="quest-hud">
-                <div class="progress-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
-                <!-- NEW: Difficulty Level Indicator -->
-                <div id="difficulty-indicator" class="difficulty-indicator">
-                    Difficulty: 1
+        <div class="panel-section voice-controls">
+            <h3 class="panel-subtitle">Input</h3><label class="a11y-label">Voice Commands</label><button
+                id="voice-command-btn" class="a11y-btn voice-btn" aria-label="Activate voice commands"><svg
+                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 14q-1.25 0-2.125-.875T9 11V5q0-1.25.875-2.125T12 2q1.25 0 2.125.875T15 5v6q0 1.25-.875 2.125T12 14Zm-1 7v-3.075q-2.6-.35-4.3-2.325T4 11H6q0 2.075 1.463 3.538T11 16v-1q-1.25 0-2.125-.875T8 12V6h1v5q0 .825.588 1.413T11 13h2q.825 0 1.413-.588T15 11V6h1v6q0 2.075-1.463 3.538T11 16v1q2.075 0 3.538-1.463T18 11h2q0 2.925-2.15 4.963T13 20.925V24h-2v-3.075q.575-.05.975-.113T12.8 20.7q-.275.05-.575.075T12 20.8q-.1 0-.175-.012T11.65 20.75q-.35.05-.725.075T10 20.9V21Z" />
+                </svg>Listen</button>
+            <p id="voice-status" class="voice-status">Say "Submit" or "Repeat"</p>
+        </div>
+        <div class="panel-footer"><button id="logout-btn" class="btn btn-secondary btn-full-width">Log Out</button>
+        </div>
+    </aside>
+    <main class="main-content">
+        <div id="quest-area" class="quest-area">
+            <div id="dashboard-view">
+                <div class="mission-briefing">
+                    <h2 id="welcome-message">Your Atelier Awaits</h2>
+                    <p>The garden has prepared a new seed of knowledge for you. Shall we begin?</p><button
+                        id="start-lesson-btn" class="btn btn-primary btn-large">Cultivate</button>
                 </div>
             </div>
-
-            <div id="question-card" class="question-container">
-                <div id="feedback-overlay" class="feedback-overlay">
-                    <div class="feedback-icon"></div>
-                    <span class="feedback-text"></span>
+            <div id="lesson-view" class="hidden">
+                <div class="quest-hud">
+                    <div class="progress-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    <div id="difficulty-indicator" class="difficulty-indicator">Soil: Level 1</div>
                 </div>
-                <h3 id="question-text">Buddy is summoning a question...</h3>
-                <form id="answer-form">
-                    <textarea id="user-answer" rows="3" placeholder="Whisper your answer here..."></textarea>
-                    <button type="submit" class="btn btn-primary">Lock In Answer</button>
-                </form>
+                <div id="question-card" class="question-container">
+                    <div id="feedback-overlay" class="feedback-overlay">
+                        <div class="feedback-icon"></div><span class="feedback-text"></span>
+                    </div><button id="read-aloud-btn" class="read-aloud-btn"
+                        aria-label="Read question aloud">🔊</button>
+                    <h3 id="question-text">Summoning a question from the ether...</h3>
+                    <form id="answer-form"><textarea id="user-answer" rows="3" placeholder="Plant your thoughts here..."
+                            aria-label="Your Answer"></textarea>
+                        <div class="form-actions"><button type="submit" class="btn btn-primary">Commit Answer</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
-
     <div id="status-notification"></div>
 </body>
 <script src="js/main.js"></script>
