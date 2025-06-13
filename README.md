@@ -1,14 +1,13 @@
 # LearnBuddy - Open Source Adaptive Learning Platform
 
  <!-- It's highly recommended to create a hero image/logo and upload it -->
- 
+
 
 **LearnBuddy is a free, open-source, AI-driven adaptive learning platform dedicated to making personalized education accessible to every child.**
 
 Our mission is to build a tool that is not only intelligent and engaging but is also designed with inclusivity at its core. This project is for learners, educators, developers, and anyone passionate about the future of education.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Discord](https://img.shields.io/discord/your-discord-id?label=Join%20our%20Discord&logo=discord)](https://discord.gg/your-invite-link)
 [![GitHub contributors](https://img.shields.io/github/contributors/tripathiji1312/learnbuddy.svg)](https://gitHub.com/tripathiji1312/learn_buddy/graphs/contributors/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
