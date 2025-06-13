@@ -4,82 +4,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quest Hub - LearnBuddy</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Lexend:wght@400;500;600&display=swap"
-        rel="stylesheet">
+    <title>LearnBuddy - Learning Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
-<body id="app-body">
-    <aside class="control-panel">
-        <h2 class="panel-title">Atelier</h2>
-        <div class="panel-section">
-            <h3 class="panel-subtitle">Display</h3><label class="a11y-label" for="theme-selector">Color
-                Palette</label><select id="theme-selector" class="theme-selector">
-                <option value="theme-lumina">Lumina</option>
-                <option value="theme-solar">Solar</option>
-                <option value="theme-mono">Monochrome</option>
-            </select>
-        </div>
-        <div class="panel-section">
-            <h3 class="panel-subtitle">Typography</h3><label class="a11y-label">Font Size</label>
-            <div class="button-group"><button class="a11y-btn" data-action="decrease-font"
-                    aria-label="Decrease text size">A-</button><button class="a11y-btn" data-action="increase-font"
-                    aria-label="Increase text size">A+</button></div>
-            <div class="toggle-container"><label class="a11y-label" for="font-switch">Readable Font</label>
-                <div class="toggle-switch"><input type="checkbox" id="font-switch" class="toggle-switch-checkbox"
-                        data-action="toggle-font"><label class="toggle-switch-label" for="font-switch"><span
-                            class="toggle-switch-inner"></span><span class="toggle-switch-switch"></span></label></div>
-            </div>
-        </div>
-        <div class="panel-section voice-controls">
-            <h3 class="panel-subtitle">Input</h3><label class="a11y-label">Voice Commands</label><button
-                id="voice-command-btn" class="a11y-btn voice-btn" aria-label="Activate voice commands"><svg
-                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M12 14q-1.25 0-2.125-.875T9 11V5q0-1.25.875-2.125T12 2q1.25 0 2.125.875T15 5v6q0 1.25-.875 2.125T12 14Zm-1 7v-3.075q-2.6-.35-4.3-2.325T4 11H6q0 2.075 1.463 3.538T11 16v-1q-1.25 0-2.125-.875T8 12V6h1v5q0 .825.588 1.413T11 13h2q.825 0 1.413-.588T15 11V6h1v6q0 2.075-1.463 3.538T11 16v1q2.075 0 3.538-1.463T18 11h2q0 2.925-2.15 4.963T13 20.925V24h-2v-3.075q.575-.05.975-.113T12.8 20.7q-.275.05-.575.075T12 20.8q-.1 0-.175-.012T11.65 20.75q-.35.05-.725.075T10 20.9V21Z" />
-                </svg>Listen</button>
-            <p id="voice-status" class="voice-status">Say "Submit" or "Repeat"</p>
-        </div>
-        <div class="panel-footer"><button id="logout-btn" class="btn btn-secondary btn-full-width">Log Out</button>
-        </div>
-    </aside>
-    <main class="main-content">
-        <div id="quest-area" class="quest-area">
-            <div id="dashboard-view">
-                <div class="mission-briefing">
-                    <h2 id="welcome-message">Your Atelier Awaits</h2>
-                    <p>The garden has prepared a new seed of knowledge for you. Shall we begin?</p><button
-                        id="start-lesson-btn" class="btn btn-primary btn-large">Cultivate</button>
+<body class="app-body">
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="app-logo">
+                    <i class="fas fa-robot"></i>
+                    <span>LearnBuddy</span>
+                </div>
+                <div class="user-greeting">
+                    <h2>Welcome back, <span id="username-display">Learner</span>!</h2>
+                    <p>Ready for today's learning adventure?</p>
                 </div>
             </div>
-            <div id="lesson-view" class="hidden">
-                <div class="quest-hud">
-                    <div class="progress-container">
-                        <div id="progress-bar" class="progress-bar"></div>
-                    </div>
-                    <div id="difficulty-indicator" class="difficulty-indicator">Soil: Level 1</div>
-                </div>
-                <div id="question-card" class="question-container">
-                    <div id="feedback-overlay" class="feedback-overlay">
-                        <div class="feedback-icon"></div><span class="feedback-text"></span>
-                    </div><button id="read-aloud-btn" class="read-aloud-btn"
-                        aria-label="Read question aloud">🔊</button>
-                    <h3 id="question-text">Summoning a question from the ether...</h3>
-                    <form id="answer-form"><textarea id="user-answer" rows="3" placeholder="Plant your thoughts here..."
-                            aria-label="Your Answer"></textarea>
-                        <div class="form-actions"><button type="submit" class="btn btn-primary">Commit Answer</button>
+            <div class="header-right">
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-fire"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="streak-count">0</span>
+                            <span class="stat-label">Day Streak</span>
                         </div>
-                    </form>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-star"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="xp-count">0</span>
+                            <span class="stat-label">XP</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-outline" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main">
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view active">
+            <div class="dashboard-grid">
+                <!-- Current Quest Card -->
+                <div class="quest-card">
+                    <div class="quest-header">
+                        <h3>Today's Quest</h3>
+                        <div class="quest-difficulty" id="quest-difficulty">
+                            <i class="fas fa-star"></i>
+                            <span>Level 1</span>
+                        </div>
+                    </div>
+                    <div class="quest-content" id="quest-content">
+                        <div class="quest-placeholder">
+                            <i class="fas fa-play-circle"></i>
+                            <h4>Start Your Learning Journey</h4>
+                            <p>Click the button below to get your first question and begin earning XP!</p>
+                        </div>
+                    </div>
+                    <div class="quest-actions">
+                        <button id="start-quest-btn" class="btn btn-primary" onclick="startQuest()">
+                            <i class="fas fa-rocket"></i>
+                            Start Quest
+                        </button>
+                        <button id="next-question-btn" class="btn btn-primary hidden" onclick="getNextQuestion()">
+                            <i class="fas fa-arrow-right"></i>
+                            Next Question
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress Card -->
+                <div class="progress-card">
+                    <h3>Your Progress</h3>
+                    <div class="progress-ring-container">
+                        <svg class="progress-ring" width="120" height="120">
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" stroke-width="6" />
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="#667eea" stroke-width="6"
+                                stroke-dasharray="340" stroke-dashoffset="340" class="progress-circle"
+                                id="progress-circle" />
+                        </svg>
+                        <div class="progress-text">
+                            <span class="progress-percentage" id="progress-percentage">0%</span>
+                            <span class="progress-label">Complete</span>
+                        </div>
+                    </div>
+                    <div class="progress-stats">
+                        <div class="progress-stat">
+                            <span class="stat-number" id="correct-answers">0</span>
+                            <span class="stat-name">Correct</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="stat-number" id="total-questions">0</span>
+                            <span class="stat-name">Total</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievements Card -->
+                <div class="achievements-card">
+                    <h3>Recent Achievements</h3>
+                    <div class="achievements-list" id="achievements-list">
+                        <div class="achievement-placeholder">
+                            <i class="fas fa-trophy"></i>
+                            <p>Complete your first quest to unlock achievements!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question View -->
+        <div id="question-view" class="view">
+            <div class="question-container">
+                <div class="question-header">
+                    <button class="btn btn-outline" onclick="backToDashboard()">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </button>
+                    <div class="question-info">
+                        <span class="question-number">Question <span id="current-question-number">1</span></span>
+                        <div class="difficulty-indicator" id="question-difficulty-indicator">
+                            <i class="fas fa-star"></i>
+                            <span>Level 1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <div class="question-text" id="question-text">
+                        <p>Loading your personalized question...</p>
+                    </div>
+
+                    <div class="answer-section">
+                        <div class="form-group">
+                            <label for="user-answer">Your Answer:</label>
+                            <textarea id="user-answer" placeholder="Type your answer here..." rows="4"></textarea>
+                        </div>
+
+                        <div class="answer-actions">
+                            <button id="submit-answer-btn" class="btn btn-primary" onclick="submitAnswer()">
+                                <i class="fas fa-paper-plane"></i>
+                                Submit Answer
+                            </button>
+                            <button id="skip-question-btn" class="btn btn-outline" onclick="skipQuestion()">
+                                <i class="fas fa-forward"></i>
+                                Skip Question
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Answer Feedback -->
+                    <div id="answer-feedback" class="answer-feedback hidden">
+                        <div class="feedback-content">
+                            <div class="feedback-icon" id="feedback-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="feedback-text">
+                                <h4 id="feedback-title">Great job!</h4>
+                                <p id="feedback-message">That's correct! You're doing amazing.</p>
+                                <div class="feedback-score">
+                                    <span>Similarity Score: </span>
+                                    <span id="similarity-score">95%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="continueToNext()">
+                            <i class="fas fa-arrow-right"></i>
+                            Continue
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
-    <div id="status-notification"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <div class="spinner-large"></div>
+            </div>
+            <p id="loading-text">Preparing your personalized question...</p>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Oops! Something went wrong</h3>
+                <button class="modal-close" onclick="closeErrorModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="error-modal-text">We encountered an issue. Please try again.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeErrorModal()">
+                    Got it
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celebration Animation -->
+    <div id="celebration" class="celebration hidden">
+        <div class="confetti"></div>
+        <div class="celebration-text">
+            <h2>Awesome!</h2>
+            <p>You earned <span id="xp-earned">+10</span> XP!</p>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
 </body>
-<script src="js/main.js"></script>
-<script src="js/app.js"></script>
 
 </html>

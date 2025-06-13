@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - LearnBuddy</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="admin-body">
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <a href="admin.html" class="nav-logo">
+                    <i class="fas fa-robot"></i>
+                    <span>LearnBuddy</span>
+                </a>
+                <span class="admin-tag">Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-view="users">
+                    <i class="fas fa-users"></i><span>Users</span>
+                </a>
+                <a href="#" class="nav-item" data-view="questions">
+                    <i class="fas fa-question-circle"></i><span>Questions</span>
+                </a>
+                <a href="#" id="admin-logout-btn" class="nav-item nav-item-logout">
+                    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="admin-view active">
+                <h1>Dashboard</h1>
+                <div class="admin-stats-grid">
+                    <div class="admin-stat-card">
+                        <i class="fas fa-users"></i>
+                        <div class="stat-info">
+                            <span id="stats-total-users">0</span>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="stat-info">
+                            <span id="stats-total-questions">0</span>
+                            <p>Total Questions</p>
+                        </div>
+                    </div>
+                    <div class="admin-stat-card">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="stat-info">
+                            <span id="stats-answers">0</span>
+                            <p>Answers Submitted</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-chart-container">
+                    <h2>Questions per Difficulty</h2>
+                    <canvas id="difficulty-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Users View -->
+            <div id="users-view" class="admin-view">
+                <div class="view-header">
+                    <h1>Manage Users</h1>
+                    <button id="add-user-btn" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Add New User
+                    </button>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>XP</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- User rows will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Questions View -->
+            <div id="questions-view" class="admin-view">
+                <div class="view-header">
+                    <h1>Manage Questions</h1>
+                    <button id="add-question-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Question
+                    </button>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Question Text</th>
+                                <th>Difficulty</th>
+                                <th>Lesson ID</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questions-table-body">
+                            <!-- Question rows will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Question Modal -->
+    <div id="question-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="question-modal-title">Add New Question</h3>
+                <button class="modal-close" id="question-modal-close-btn">×</button>
+            </div>
+            <form id="question-form">
+                <input type="hidden" id="question-id-input">
+                <div class="form-group">
+                    <label for="question-text-input">Question Text</label>
+                    <textarea id="question-text-input" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="correct-answer-input">Correct Answer Text</label>
+                    <input type="text" id="correct-answer-input" required>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="question-difficulty-input">Difficulty Level (1-5)</label>
+                        <input type="number" id="question-difficulty-input" min="1" max="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lesson-id-input">Lesson ID</label>
+                        <input type="number" id="lesson-id-input" min="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save Question</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="user-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="user-modal-title">Add New User</h3>
+                <button class="modal-close" id="user-modal-close-btn">×</button>
+            </div>
+            <form id="user-form">
+                <input type="hidden" id="user-id-input">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="user-username-input">Username</label>
+                        <input type="text" id="user-username-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-email-input">Email</label>
+                        <input type="email" id="user-email-input" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="user-password-input">Password</label>
+                    <input type="password" id="user-password-input" placeholder="Leave blank to keep unchanged">
+                    <small>Min 8 characters. Required for new users.</small>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="user-xp-input">Experience Points (XP)</label>
+                        <input type="number" id="user-xp-input" value="0" min="0" required>
+                    </div>
+                    <div class="form-group admin-toggle">
+                        <label for="user-is-admin-input">Administrator</label>
+                        <label class="switch">
+                            <input type="checkbox" id="user-is-admin-input">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner-large"></div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

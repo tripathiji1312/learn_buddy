@@ -1,93 +1,232 @@
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.body.classList.contains('home-body') || document.body.classList.contains('auth-body')) return; // Exit if not on the main app page
+    // --- Configuration & State ---
+    const API_BASE_URL = 'http://127.0.0.1:8000'; // Replace with your actual backend URL
+    const token = localStorage.getItem('accessToken');
+    const username = localStorage.getItem('username');
 
-    // --- SECTION 1: DOM ELEMENT SELECTOR & STATE ---
-    const token = getToken();
-    if (!token) { window.location.href = 'auth.html'; return; }
+    let currentQuestion = null; // Will store { question_id, difficulty_level, question_text }
+    let lessonId = 1; // Default lesson
+    
+    // --- Element Selections ---
+    const usernameDisplay = document.getElementById('username-display');
+    const dashboardView = document.getElementById('dashboard-view');
+    const questionView = document.getElementById('question-view');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
 
-    const elements = {
-        appBody: document.getElementById('app-body'), dashboardView: document.getElementById('dashboard-view'), lessonView: document.getElementById('lesson-view'),
-        startLessonBtn: document.getElementById('start-lesson-btn'), questionText: document.getElementById('question-text'), answerForm: document.getElementById('answer-form'),
-        userAnswerInput: document.getElementById('user-answer'), progressBar: document.getElementById('progress-bar'), difficultyIndicator: document.getElementById('difficulty-indicator'),
-        themeSelector: document.getElementById('theme-selector'), increaseFontBtn: document.querySelector('[data-action="increase-font"]'),
-        decreaseFontBtn: document.querySelector('[data-action="decrease-font"]'), fontSwitch: document.getElementById('font-switch'),
-        readAloudBtn: document.getElementById('read-aloud-btn'), voiceCommandBtn: document.getElementById('voice-command-btn'), voiceStatus: document.getElementById('voice-status'),
-        logoutBtn: document.getElementById('logout-btn')
+    const startQuestBtn = document.getElementById('start-quest-btn');
+    const nextQuestionBtn = document.getElementById('next-question-btn');
+    const questionContent = document.getElementById('quest-content');
+
+    const questionTextEl = document.getElementById('question-text');
+    const userAnswerTextarea = document.getElementById('user-answer');
+    const submitAnswerBtn = document.getElementById('submit-answer-btn');
+    
+    const feedbackContainer = document.getElementById('answer-feedback');
+    const feedbackIcon = document.getElementById('feedback-icon').querySelector('i');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackMessage = document.getElementById('feedback-message');
+    const similarityScoreEl = document.getElementById('similarity-score');
+    
+    const errorModal = document.getElementById('error-modal');
+    const errorModalText = document.getElementById('error-modal-text');
+    const celebrationEl = document.getElementById('celebration');
+
+    // --- Initial Check ---
+    if (!token || !username) {
+        // If no token, redirect to the login page immediately.
+        window.location.href = 'auth.html';
+        return; // Stop further execution
+    }
+    
+    // Personalize the UI
+    usernameDisplay.textContent = username;
+
+    // --- Core Functions ---
+    
+    /**
+     * Performs an authenticated fetch request to the API.
+     * @param {string} endpoint - The API endpoint to call.
+     * @param {object} options - The options for the fetch call (method, body, etc.).
+     * @returns {Promise<any>} - The JSON response from the API.
+     */
+    const apiFetch = async (endpoint, options = {}) => {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+
+        if (response.status === 401) {
+            // Token is invalid or expired
+            logout();
+            return;
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.detail || 'An API error occurred.');
+        }
+        return data;
     };
 
-    let state = { currentQuestion: null, lessonProgress: 0, fontSizeIndex: 1, isListening: false };
+    /**
+     * Fetches the next question from the AI.
+     */
+    const getNextQuestion = async () => {
+        showLoading('Preparing your personalized question...');
+        try {
+            const data = await apiFetch('/next_question', {
+                method: 'POST',
+                body: JSON.stringify({ lesson_id: lessonId })
+            });
 
-    // --- SECTION 2: ACCESSIBILITY & SETTINGS ---
-    const applyPreference = (key, value) => {
-        localStorage.setItem(key, value);
-        if (key === 'theme') {
-            const currentClasses = Array.from(elements.appBody.classList).filter(c => c.startsWith('font-'));
-            elements.appBody.className = `${value} ${currentClasses.join(' ')}`;
-        } else if (key === 'fontFamily') {
-            elements.appBody.classList.toggle('font-family-alt', value);
-        } else if (key === 'fontSizeIndex') {
-            state.fontSizeIndex = parseInt(value);
-            for(let i=0; i<=3; i++) elements.appBody.classList.remove(`font-size-${i}`);
-            elements.appBody.classList.add(`font-size-${state.fontSizeIndex}`);
+            currentQuestion = data;
+            displayQuestion(data);
+            switchToView('question');
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            hideLoading();
         }
     };
-    const loadPreferences = () => {
-        const theme = localStorage.getItem('theme') || 'theme-lumina';
-        elements.themeSelector.value = theme; applyPreference('theme', theme);
-        state.fontSizeIndex = parseInt(localStorage.getItem('fontSizeIndex') || '1'); applyPreference('fontSizeIndex', state.fontSizeIndex);
-        const useAltFont = localStorage.getItem('fontFamily') === 'true'; elements.fontSwitch.checked = useAltFont; applyPreference('fontFamily', useAltFont);
-    };
-    elements.themeSelector.addEventListener('change', e => applyPreference('theme', e.target.value));
-    elements.increaseFontBtn.addEventListener('click', () => applyPreference('fontSizeIndex', Math.min(3, state.fontSizeIndex + 1)));
-    elements.decreaseFontBtn.addEventListener('click', () => applyPreference('fontSizeIndex', Math.max(0, state.fontSizeIndex - 1)));
-    elements.fontSwitch.addEventListener('change', e => applyPreference('fontFamily', e.target.checked));
     
-    // --- SECTION 3: SPEECH API ---
-    const synth = window.speechSynthesis;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.continuous = false; recognition.lang = 'en-US';
-        recognition.onstart = () => { state.isListening = true; elements.voiceStatus.textContent = "Listening..."; elements.voiceCommandBtn.classList.add('is-listening'); };
-        recognition.onend = () => { state.isListening = false; elements.voiceStatus.textContent = "Say 'Submit' or 'Repeat'"; elements.voiceCommandBtn.classList.remove('is-listening'); };
-        recognition.onresult = e => {
-            const command = e.results[0][0].transcript.toLowerCase().trim();
-            if (command.includes('submit')) elements.answerForm.requestSubmit ? elements.answerForm.requestSubmit() : elements.answerForm.submit();
-            if (command.includes('repeat')) speak(elements.questionText.textContent);
-        };
-        elements.voiceCommandBtn.addEventListener('click', () => state.isListening ? recognition.stop() : recognition.start());
-    } else { if(elements.voiceCommandBtn) elements.voiceCommandBtn.closest('.voice-controls').style.display = 'none'; }
-    const speak = (text) => { if(synth.speaking) synth.cancel(); if(text) synth.speak(new SpeechSynthesisUtterance(text)); };
-    elements.readAloudBtn.addEventListener('click', () => speak(elements.questionText.textContent));
+    /**
+     * Handles the submission of a user's answer.
+     */
+    const submitAnswer = async () => {
+        const userAnswer = userAnswerTextarea.value.trim();
+        if (!userAnswer || !currentQuestion) return;
 
-    // --- SECTION 4: CORE APP LOGIC ---
-    const fetchNextQuestion = async () => {
-        elements.userAnswerInput.value = ''; elements.userAnswerInput.disabled = false; elements.userAnswerInput.focus();
+        showLoading('Analyzing your answer...');
+        submitAnswerBtn.disabled = true;
+
+        const payload = {
+            lesson_id: lessonId,
+            question_id: currentQuestion.question_id,
+            difficulty_answered: currentQuestion.difficulty_level,
+            user_answer: userAnswer,
+        };
+
         try {
-            const res = await fetch(`${API_BASE_URL}/next_question`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ lesson_id: 1 }) });
-            if (!res.ok) throw new Error("Could not fetch quest.");
-            state.currentQuestion = await res.json();
-            elements.questionText.textContent = state.currentQuestion.question_text;
-            elements.difficultyIndicator.textContent = `Soil: Level ${state.currentQuestion.difficulty_level}`;
-        } catch (error) { showStatus(error.message, true); }
+            const result = await apiFetch('/submit_answer', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            displayFeedback(result);
+
+            // If correct, show celebration
+            if (result.is_correct) {
+                showCelebration();
+            }
+        } catch (error) {
+            showError(error.message);
+            submitAnswerBtn.disabled = false;
+        } finally {
+            hideLoading();
+        }
     };
-    const submitAnswer = async e => {
-        e.preventDefault(); if (!state.currentQuestion || elements.userAnswerInput.disabled) return;
-        elements.userAnswerInput.disabled = true;
-        try {
-            const res = await fetch(`${API_BASE_URL}/submit_answer`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ lesson_id: 1, question_id: state.currentQuestion.question_id, difficulty_answered: state.currentQuestion.difficulty_level, user_answer: elements.userAnswerInput.value }) });
-            if (!res.ok) throw new Error('Submission failed.');
-            const result = await res.json();
-            state.lessonProgress = Math.min(100, state.lessonProgress + 10);
-            elements.progressBar.style.width = `${state.lessonProgress}%`;
-            showStatus(result.is_correct ? "Correct! 🌱" : "Let's try another one.", !result.is_correct);
-            await new Promise(r => setTimeout(r, 1200));
-            await fetchNextQuestion();
-        } catch (error) { showStatus(error.message, true); elements.userAnswerInput.disabled = false; }
+
+    // --- UI Update Functions ---
+    
+    /**
+     * Switches between the 'dashboard' and 'question' views.
+     * @param {'dashboard' | 'question'} viewName - The name of the view to switch to.
+     */
+    const switchToView = (viewName) => {
+        dashboardView.classList.remove('active');
+        questionView.classList.remove('active');
+
+        if (viewName === 'dashboard') {
+            dashboardView.classList.add('active');
+        } else {
+            questionView.classList.add('active');
+        }
     };
-    elements.startLessonBtn.addEventListener('click', () => { elements.dashboardView.classList.add('hidden'); elements.lessonView.classList.remove('hidden'); elements.lessonView.classList.add('visible'); fetchNextQuestion(); });
-    elements.answerForm.addEventListener('submit', submitAnswer);
-    elements.logoutBtn.addEventListener('click', () => { localStorage.removeItem('learnbuddy_token'); window.location.href = 'index.html'; });
-    loadPreferences();
+
+    const displayQuestion = (questionData) => {
+        questionTextEl.textContent = questionData.question_text;
+        userAnswerTextarea.value = '';
+        submitAnswerBtn.disabled = false;
+        feedbackContainer.classList.add('hidden');
+    };
+
+    const displayFeedback = (result) => {
+        feedbackContainer.classList.remove('hidden', 'correct', 'incorrect');
+        feedbackIcon.classList.remove('fa-check-circle', 'fa-times-circle');
+        
+        if (result.is_correct) {
+            feedbackContainer.classList.add('correct');
+            feedbackIcon.classList.add('fa-check-circle');
+            feedbackTitle.textContent = 'Great job!';
+            feedbackMessage.textContent = "That's correct! You're doing amazing.";
+        } else {
+            feedbackContainer.classList.add('incorrect');
+            feedbackIcon.classList.add('fa-times-circle');
+            feedbackTitle.textContent = 'Not quite';
+            feedbackMessage.textContent = "That wasn't the answer we were looking for, but keep trying!";
+        }
+        
+        similarityScoreEl.textContent = `${Math.round(result.similarity_score * 100)}%`;
+    };
+    
+    const showLoading = (message) => {
+        loadingText.textContent = message;
+        loadingOverlay.classList.remove('hidden');
+    };
+
+    const hideLoading = () => {
+        loadingOverlay.classList.add('hidden');
+    };
+
+    const showError = (message) => {
+        errorModalText.textContent = message;
+        errorModal.classList.remove('hidden');
+    };
+
+    window.closeErrorModal = () => {
+        errorModal.classList.add('hidden');
+    };
+    
+    const showCelebration = () => {
+        celebrationEl.classList.remove('hidden');
+        setTimeout(() => {
+            celebrationEl.classList.add('hidden');
+        }, 2000); // Animation lasts 2 seconds
+    };
+    
+    // --- UI Event Handlers (exposed to global scope) ---
+    
+    window.startQuest = () => {
+        startQuestBtn.classList.add('hidden');
+        nextQuestionBtn.classList.remove('hidden');
+        questionContent.innerHTML = `<p>Your quest is active! Click "Next Question" to begin.</p>`;
+        getNextQuestion();
+    };
+
+    window.getNextQuestion = getNextQuestion;
+
+    window.submitAnswer = submitAnswer;
+    
+    window.continueToNext = () => {
+        feedbackContainer.classList.add('hidden');
+        getNextQuestion();
+    };
+    
+    window.skipQuestion = () => {
+        // A simple skip just gets the next question
+        getNextQuestion();
+    };
+
+    window.backToDashboard = () => {
+        switchToView('dashboard');
+    };
+
+    window.logout = () => {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('username');
+        window.location.href = 'index.html';
+    };
+
 });
