@@ -963,6 +963,7 @@ body {
 
 .input-wrapper i.fa-user,
 .input-wrapper i.fa-lock,
+.input-wrapper i.fa-user-shield,
 .input-wrapper i.fa-envelope {
     position: absolute;
     left: var(--spacing-md);
@@ -1936,6 +1937,9 @@ h3 {
     color: white;
 }
 
+.section-header h2{
+    color: whitesmoke;
+}
 .section-header p {
     color: var(--gray-400);
     max-width: 600px;
