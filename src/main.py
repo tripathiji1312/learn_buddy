@@ -1,5 +1,6 @@
 import logging
 from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.middleware.cors import CORSMiddleware  # <-- THE FIX IS HERE
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 import psycopg2.extras
@@ -8,7 +9,7 @@ from jose import jwt, JWTError
 
 # --- Import our custom modules ---
 from .learning_models import (
-    select_difficulty_epsilon_greedy,  # UPDATED IMPORT
+    select_difficulty_epsilon_greedy,
     update_bandit_state,
     check_semantic_similarity
 )
@@ -20,6 +21,20 @@ from .db_models import User
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 app = FastAPI(title="LearnBuddy AI Engine", version="1.0.0")
 
+# Define the list of origins that are allowed to make requests to your API
+origins = [
+    "http://localhost",
+    "http://localhost:5500",  # The origin of your VS Code Live Server
+    "http://127.0.0.1:5500", # Sometimes the browser uses this address as well
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- Pydantic Models for API Data ---
 class UserCreate(BaseModel):
@@ -128,9 +143,7 @@ def get_next_question(req: NextQuestionRequest, current_user: User = Depends(get
     """
     logging.info(f"Request for next question for user {current_user.id}, lesson {req.lesson_id}")
 
-    # UPDATED: Calling the new Epsilon-Greedy function
     optimal_difficulty = select_difficulty_epsilon_greedy(current_user.id, req.lesson_id)
-
     question_id, question_text = select_question(optimal_difficulty, req.lesson_id)
 
     if question_id is None:
@@ -157,7 +170,6 @@ def submit_answer(submission: AnswerSubmission, current_user: User = Depends(get
         correct_answer = result['correct_answer_text']
 
         is_correct, score = check_semantic_similarity(submission.user_answer, correct_answer)
-
         update_bandit_state(current_user.id, submission.lesson_id, submission.difficulty_answered, is_correct)
 
         cur.execute(

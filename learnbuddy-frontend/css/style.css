@@ -1,0 +1,655 @@
+/* --- ✨ LearnBuddy Design System 2.0 ✨ --- */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap');
+
+:root {
+    --font-title: 'Fredoka One', cursive;
+    --font-body: 'Poppins', sans-serif;
+    --primary: #00C49A;
+    /* Optimistic Teal */
+    --secondary: #FF8C42;
+    /* Friendly Orange */
+    --accent: #9D5DFF;
+    /* Magic Purple */
+    --background: #FDF6E3;
+    /* Warm Off-White */
+    --text-dark: #1E2A4D;
+    /* Deep Navy */
+    --card-bg: rgba(255, 255, 255, 0.4);
+    --success: #00C49A;
+    --error: #ff4d4d;
+    --border-width: 3px;
+    --radius: 20px;
+    --bold-shadow: 6px 6px 0px var(--text-dark);
+    --bold-shadow-hover: 8px 8px 0px var(--text-dark);
+}
+
+/* --- Base & Reset --- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--background);
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.7;
+    font-weight: 400;
+    overflow-x: hidden;
+    /* Prevent horizontal scroll from blobs */
+}
+
+/* --- 🛸 Animated Background 🛸 --- */
+.blob {
+    position: fixed;
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0.7;
+}
+
+.blob1 {
+    background: var(--accent);
+    width: 400px;
+    height: 400px;
+    top: -150px;
+    left: -150px;
+    filter: blur(100px);
+    animation: drift 20s infinite alternate;
+}
+
+.blob2 {
+    background: var(--secondary);
+    width: 300px;
+    height: 300px;
+    bottom: -100px;
+    right: -100px;
+    filter: blur(120px);
+    animation: drift 25s infinite alternate-reverse;
+}
+
+.blob3 {
+    display: none;
+}
+
+/* Hide blob3 on auth/app pages */
+.home-body .blob3 {
+    display: block;
+    background: var(--primary);
+    width: 250px;
+    height: 250px;
+    top: 50%;
+    left: 30%;
+    filter: blur(90px);
+    animation: drift 15s infinite alternate;
+}
+
+/* --- Global Components --- */
+.btn {
+    font-family: var(--font-title);
+    font-size: 1.1rem;
+    padding: 12px 28px;
+    border: var(--border-width) solid var(--text-dark);
+    border-radius: var(--radius);
+    box-shadow: var(--bold-shadow);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-out;
+    text-align: center;
+}
+
+.btn:hover {
+    transform: translateY(-4px) translateX(-4px);
+    box-shadow: var(--bold-shadow-hover);
+}
+
+.btn:active {
+    transform: translateY(0) translateX(0);
+    box-shadow: var(--bold-shadow);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    color: var(--text-dark);
+}
+
+.btn-large {
+    font-size: 1.3rem;
+    padding: 16px 36px;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    --radius: 12px;
+}
+
+.btn-full-width {
+    display: block;
+    width: 100%;
+}
+
+.glass-card {
+    background: var(--card-bg);
+    border: var(--border-width) solid var(--text-dark);
+    border-radius: var(--radius);
+    box-shadow: var(--bold-shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 2.5rem;
+}
+
+.section-title {
+    font-family: var(--font-title);
+    font-size: clamp(2rem, 5vw, 3rem);
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.main-footer {
+    text-align: center;
+    padding: 2rem;
+    margin-top: 3rem;
+    opacity: 0.7;
+}
+
+/* --- Header & Nav --- */
+.main-header {
+    padding: 1.5rem;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.nav-logo {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-dark);
+    position: relative;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* --- 🚀 Home Page Sections 🚀 --- */
+.hero-section {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.hero-title {
+    font-family: var(--font-title);
+    font-size: clamp(3rem, 10vw, 6rem);
+    text-transform: uppercase;
+    line-height: 1.1;
+    margin: 0;
+}
+
+.hero-title span {
+    display: inline-block;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    max-width: 600px;
+    margin: 1.5rem auto 2.5rem;
+    font-weight: 600;
+}
+
+.social-proof {
+    margin-top: 1rem;
+    opacity: 0.7;
+}
+
+.how-it-works-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 6rem auto;
+    padding: 1rem;
+}
+
+.step-card {
+    background: white;
+    padding: 2rem;
+    border: var(--border-width) solid var(--text-dark);
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.step-number {
+    font-family: var(--font-title);
+    font-size: 3rem;
+    color: var(--secondary);
+}
+
+.step-title {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.features-section {
+    padding: 4rem 1rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-title {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    color: var(--accent);
+    margin-top: 0;
+}
+
+.cta-section {
+    padding: 4rem 1rem;
+}
+
+.cta-box {
+    background: var(--accent);
+    color: white;
+    text-align: center;
+    padding: 4rem;
+    border-radius: var(--radius);
+    max-width: 800px;
+    margin: auto;
+    border: var(--border-width) solid var(--text-dark);
+}
+
+.cta-title {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    margin: 0 0 1rem 0;
+}
+
+/* --- 🚪 Auth & App Pages 🚪 --- */
+.auth-body,
+.app-body {
+    min-height: 100vh;
+}
+
+.auth-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.auth-logo {
+    margin-bottom: 2rem;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 420px;
+    transition: all 0.3s;
+}
+
+.auth-title {
+    font-family: var(--font-title);
+    text-align: center;
+    margin: 0 0 2rem 0;
+    font-size: 2rem;
+}
+
+.auth-box input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 1rem;
+    border: var(--border-width) solid var(--text-dark);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.auth-box input:focus {
+    outline: var(--border-width) solid var(--primary);
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-weight: 600;
+}
+
+.auth-switch a {
+    color: var(--accent);
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.app-body {
+    background: var(--primary);
+    color: white;
+}
+
+.app-body .main-header,
+.app-body .nav-logo {
+    color: white;
+}
+
+#app-main-content {
+    padding: 2rem;
+}
+
+.mission-briefing {
+    color: var(--text-dark);
+    max-width: 700px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.progress-container {
+    max-width: 700px;
+    margin: 0 auto 1.5rem;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: white;
+    border-radius: 6px;
+    transition: width 0.5s ease-out;
+}
+
+.question-container {
+    position: relative;
+    color: var(--text-dark);
+    max-width: 700px;
+    margin: auto;
+}
+
+#question-text {
+    font-family: var(--font-title);
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    text-align: center;
+}
+
+#answer-form textarea {
+    width: 100%;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem;
+    border: var(--border-width) solid var(--text-dark);
+    border-radius: 12px;
+    margin: 1rem 0;
+}
+
+/* --- 🎭 Feedback & Animations 🎭 --- */
+#status-notification {
+    /* from previous CSS */
+}
+
+.feedback-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--radius);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.feedback-icon {
+    font-size: 80px;
+    line-height: 1;
+}
+
+.feedback-text {
+    font-family: var(--font-title);
+    font-size: 2rem;
+}
+
+.question-container.correct .feedback-overlay {
+    background: rgba(200, 247, 222, 0.95);
+    opacity: 1;
+    color: var(--success);
+    animation: pop 0.3s ease-out;
+}
+
+.question-container.incorrect .feedback-overlay {
+    background: rgba(255, 219, 219, 0.95);
+    opacity: 1;
+    color: var(--error);
+    animation: shake 0.5s ease;
+}
+
+@keyframes pop {
+    from {
+        transform: scale(0.5);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0)
+    }
+
+    20%,
+    60% {
+        transform: translateX(-10px)
+    }
+
+    40%,
+    80% {
+        transform: translateX(10px)
+    }
+}
+
+@keyframes drift {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(50px, 100px) rotate(30deg);
+    }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-on-scroll[data-animation="fade-in-up"] {
+    transform: translateY(50px);
+}
+
+.animate-on-scroll[data-animation="bounce-in"] {
+    transform: scale(0.5);
+}
+
+.is-visible {
+    opacity: 1;
+    transform: none !important;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    /* Simpler nav on mobile */
+    .hero-title {
+        font-size: 3rem;
+    }
+}
+/* --- ✨ APP BODY & QUEST HUB REDESIGN ✨ --- */
+
+.app-body {
+    /* A deep, magical space gradient for the background */
+    background: linear-gradient(135deg, #1d2b64 0%, #302b63 50%, #24243e 100%);
+    color: white;
+    min-height: 100vh;
+}
+
+.app-body .main-header {
+    /* Make the header float above the gradient background */
+    background: transparent;
+}
+
+#app-main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 2rem;
+    min-height: calc(100vh - 120px);
+    /* Full height minus header/footer padding */
+}
+
+/* Make sure the views take up the available space */
+#dashboard-view,
+#lesson-view {
+    width: 100%;
+    max-width: 700px;
+}
+
+.mission-briefing {
+    color: var(--text-dark);
+    text-align: center;
+    padding: 3rem;
+    /* Add an animation for when the page loads */
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+.mission-briefing.animate-on-load {
+    animation: pop-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes pop-in {
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Quest HUD (Heads-Up Display) */
+.quest-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin: 0 auto 1.5rem;
+    max-width: 700px;
+}
+
+.progress-container {
+    flex-grow: 1;
+    /* Take up most of the space */
+    height: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: white;
+    border-radius: 6px;
+    transition: width 0.5s ease-out;
+}
+
+/* NEW: Difficulty Indicator Styling */
+.difficulty-indicator {
+    font-family: var(--font-title);
+    font-size: 1rem;
+    padding: 5px 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    flex-shrink: 0;
+    /* Don't let it get smaller */
+}
+
+/* Question Container styling refinement */
+.question-container {
+    position: relative;
+    color: var(--text-dark);
+    max-width: 700px;
+    margin: auto;
+    /* Apply glass effect directly here */
+    background: var(--card-bg);
+    border: var(--border-width) solid var(--text-dark);
+    border-radius: var(--radius);
+    box-shadow: var(--bold-shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+/* Add fade-in for lesson view */
+#lesson-view {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+#lesson-view:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+}

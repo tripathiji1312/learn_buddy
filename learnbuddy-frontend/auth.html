@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorer Check-in - LearnBuddy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="auth-body">
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+
+    <a href="index.html" class="nav-logo auth-logo">LearnBuddy</a>
+    <div class="auth-container">
+        <!-- Login Form - Visible by default -->
+        <div id="login-view" class="glass-card auth-box">
+            <h2 class="auth-title">Welcome Back, Explorer!</h2>
+            <form id="login-form">
+                <input type="text" id="login-username" required placeholder="Your Username">
+                <input type="password" id="login-password" required placeholder="Secret Password">
+                <button type="submit" class="btn btn-primary btn-full-width">Let's Go!</button>
+            </form>
+            <p class="auth-switch">New to the universe? <a href="#signup" id="show-signup-link">Create Your Pass</a></p>
+        </div>
+
+        <!-- Signup Form - Hidden by default -->
+        <div id="signup-view" class="glass-card auth-box hidden">
+            <h2 class="auth-title">Create Your Explorer Pass</h2>
+            <form id="signup-form">
+                <input type="text" id="signup-username" required placeholder="Create a cool Username">
+                <input type="email" id="signup-email" required placeholder="Your grown-up's email">
+                <input type="password" id="signup-password" required placeholder="Create a secret password">
+                <button type="submit" class="btn btn-primary btn-full-width">Join the Adventure!</button>
+            </form>
+            <p class="auth-switch">Already have a pass? <a href="#login" id="show-login-link">Log In</a></p>
+        </div>
+    </div>
+
+    <div id="status-notification"></div>
+</body>
+<!-- Important: Scripts at the end -->
+<script src="js/main.js"></script>
+<script src="js/auth.js"></script>
+
+</html>

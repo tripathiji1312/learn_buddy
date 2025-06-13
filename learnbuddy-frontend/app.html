@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quest Hub - LearnBuddy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="app-body">
+    <header class="main-header">
+        <nav class="navbar">
+            <a href="app.html" class="nav-logo">LearnBuddy</a>
+            <button id="logout-btn" class="btn btn-secondary btn-small">Log Out</button>
+        </nav>
+    </header>
+
+    <main id="app-main-content">
+        <!-- The Dashboard View -->
+        <div id="dashboard-view">
+            <div class="glass-card mission-briefing animate-on-load">
+                <h2 id="welcome-message">Your Next Quest Awaits!</h2>
+                <p>Buddy has analyzed your progress and prepared a brand new challenge. Are you ready?</p>
+                <button id="start-lesson-btn" class="btn btn-primary btn-large">Begin Quest!</button>
+            </div>
+        </div>
+
+        <!-- The Lesson View - This is completely hidden until the quest begins -->
+        <div id="lesson-view" class="hidden">
+            <div class="quest-hud">
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <!-- NEW: Difficulty Level Indicator -->
+                <div id="difficulty-indicator" class="difficulty-indicator">
+                    Difficulty: 1
+                </div>
+            </div>
+
+            <div id="question-card" class="question-container">
+                <div id="feedback-overlay" class="feedback-overlay">
+                    <div class="feedback-icon"></div>
+                    <span class="feedback-text"></span>
+                </div>
+                <h3 id="question-text">Buddy is summoning a question...</h3>
+                <form id="answer-form">
+                    <textarea id="user-answer" rows="3" placeholder="Whisper your answer here..."></textarea>
+                    <button type="submit" class="btn btn-primary">Lock In Answer</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div id="status-notification"></div>
+</body>
+<script src="js/main.js"></script>
+<script src="js/app.js"></script>
+
+</html>
