@@ -1,13 +1,21 @@
 <br>
 <div align="center">
-  <img src="https://raw.githubusercontent.com/tripathiji1312/learnbuddy/main/path/to/your/logo.png" alt="LearnBuddy Logo" width="200"/>
-  <h1>LearnBuddy</h1>
-  <p><b>A free, open-source, AI-driven adaptive learning platform dedicated to making personalized education accessible to every child.</b></p>
+  <h1 align="center">LearnBuddy</h1>
+  <p align="center">
+    <b>A free, open-source, AI-driven adaptive learning platform dedicated to making personalized education accessible to every child.</b>
+  </p>
 
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![GitHub contributors](https://img.shields.io/github/contributors/tripathiji1312/learnbuddy.svg)](https://gitHub.com/tripathiji1312/learn_buddy/graphs/contributors/)
-  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-
+  <p align="center">
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT">
+    </a>
+    <a href="https://gitHub.com/tripathiji1312/learn_buddy/graphs/contributors/">
+      <img src="https://img.shields.io/github/contributors/tripathiji1312/learnbuddy.svg?style=for-the-badge" alt="GitHub contributors">
+    </a>
+    <a href="http://makeapullrequest.com">
+      <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge" alt="PRs Welcome">
+    </a>
+  </p>
 </div>
 
 ---
@@ -22,14 +30,14 @@ This is a community-driven project. We believe that by working together, we can 
 
 ## 🚀 Key Features
 
-| Feature | Description |
-|---|---|
+| Feature                 | Description                                                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | **🧠 Adaptive AI Engine** | A reinforcement learning model adapts question difficulty in real-time, ensuring every learner is perfectly challenged. |
-| **🎮 Gamified Experience** | Learners earn XP, unlock achievements, and maintain "streaks," transforming learning into a motivating game. |
-| **♿ Accessibility First** | Built from the ground up for universal access with features like high-contrast themes, keyboard navigation, and voice commands. |
-| **🤖 NLP-Powered Evaluation**| Uses Sentence-Transformers to understand the semantic meaning of answers for flexible and intelligent grading. |
-| **🛡️ Secure Admin Panel** | A comprehensive dashboard for platform management, user administration, and content curation. |
-| **📦 Fully Containerized** | Easy to set up and deploy locally with Docker and Docker Compose. |
+| **🎮 Gamified Experience** | Learners earn XP, unlock achievements, and maintain "streaks," transforming learning into a motivating game.     |
+| **♿ Accessibility First**  | Built from the ground up for universal access with features like high-contrast themes, keyboard navigation, and voice commands. |
+| **🤖 NLP-Powered Evaluation**| Uses Sentence-Transformers to understand the semantic meaning of answers for flexible and intelligent grading.      |
+| **🛡️ Secure Admin Panel**   | A comprehensive dashboard for platform management, user administration, and content curation.                      |
+| **📦 Fully Containerized**  | Easy to set up and deploy locally with Docker and Docker Compose.                                                 |
 
 ---
 
