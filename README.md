@@ -4,18 +4,38 @@
   <p align="center">
     <b>A free, open-source, AI-driven adaptive learning platform dedicated to making personalized education accessible to every child.</b>
   </p>
+</div>
 
-  <p align="center">
-    <a href="https://opensource.org/licenses/MIT">
-      <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT">
-    </a>
-    <a href="https://gitHub.com/tripathiji1312/learn_buddy/graphs/contributors/">
-      <img src="https://img.shields.io/github/contributors/tripathiji1312/learnbuddy.svg?style=for-the-badge" alt="GitHub contributors">
-    </a>
-    <a href="http://makeapullrequest.com">
-      <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge" alt="PRs Welcome">
-    </a>
-  </p>
+<!-- Custom Designed Badges -->
+<div align="center">
+  <table style="border: none; margin: 20px 0;">
+    <tr style="background-color: transparent;">
+      <td align="center" style="padding: 10px; border: none;">
+        <a href="https://opensource.org/licenses/MIT" style="text-decoration: none; color: #333;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="140" height="40" viewBox="0 0 140 40">
+            <rect width="140" height="40" rx="6" fill="#f6e05e"/>
+            <text x="70" y="25" font-family="Arial, sans-serif" font-size="14" fill="#333" text-anchor="middle" font-weight="bold">License: MIT</text>
+          </svg>
+        </a>
+      </td>
+      <td align="center" style="padding: 10px; border: none;">
+        <a href="https://gitHub.com/tripathiji1312/learn_buddy/graphs/contributors/" style="text-decoration: none; color: #fff;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40">
+            <rect width="160" height="40" rx="6" fill="#4299e1"/>
+            <text x="80" y="25" font-family="Arial, sans-serif" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">View Contributors</text>
+          </svg>
+        </a>
+      </td>
+      <td align="center" style="padding: 10px; border: none;">
+        <a href="http://makeapullrequest.com" style="text-decoration: none; color: #fff;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40">
+            <rect width="160" height="40" rx="6" fill="#48bb78"/>
+            <text x="80" y="25" font-family="Arial, sans-serif" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">PRs Welcome!</text>
+          </svg>
+        </a>
+      </td>
+    </tr>
+  </table>
 </div>
 
 ---
@@ -30,14 +50,14 @@ This is a community-driven project. We believe that by working together, we can 
 
 ## 🚀 Key Features
 
-| Feature                 | Description                                                                                                       |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Feature | Description |
+|---|---|
 | **🧠 Adaptive AI Engine** | A reinforcement learning model adapts question difficulty in real-time, ensuring every learner is perfectly challenged. |
-| **🎮 Gamified Experience** | Learners earn XP, unlock achievements, and maintain "streaks," transforming learning into a motivating game.     |
-| **♿ Accessibility First**  | Built from the ground up for universal access with features like high-contrast themes, keyboard navigation, and voice commands. |
-| **🤖 NLP-Powered Evaluation**| Uses Sentence-Transformers to understand the semantic meaning of answers for flexible and intelligent grading.      |
-| **🛡️ Secure Admin Panel**   | A comprehensive dashboard for platform management, user administration, and content curation.                      |
-| **📦 Fully Containerized**  | Easy to set up and deploy locally with Docker and Docker Compose.                                                 |
+| **🎮 Gamified Experience** | Learners earn XP, unlock achievements, and maintain "streaks," transforming learning into a motivating game. |
+| **♿ Accessibility First** | Built from the ground up for universal access with features like high-contrast themes, keyboard navigation, and voice commands. |
+| **🤖 NLP-Powered Evaluation**| Uses Sentence-Transformers to understand the semantic meaning of answers for flexible and intelligent grading. |
+| **🛡️ Secure Admin Panel** | A comprehensive dashboard for platform management, user administration, and content curation. |
+| **📦 Fully Containerized** | Easy to set up and deploy locally with Docker and Docker Compose. |
 
 ---
 
