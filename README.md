@@ -4,38 +4,21 @@
   <p align="center">
     <b>A free, open-source, AI-driven adaptive learning platform dedicated to making personalized education accessible to every child.</b>
   </p>
-</div>
 
-<!-- Custom Designed Badges -->
-<div align="center">
-  <table style="border: none; margin: 20px 0;">
-    <tr style="background-color: transparent;">
-      <td align="center" style="padding: 10px; border: none;">
-        <a href="https://opensource.org/licenses/MIT" style="text-decoration: none; color: #333;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="140" height="40" viewBox="0 0 140 40">
-            <rect width="140" height="40" rx="6" fill="#f6e05e"/>
-            <text x="70" y="25" font-family="Arial, sans-serif" font-size="14" fill="#333" text-anchor="middle" font-weight="bold">License: MIT</text>
-          </svg>
-        </a>
-      </td>
-      <td align="center" style="padding: 10px; border: none;">
-        <a href="https://gitHub.com/tripathiji1312/learn_buddy/graphs/contributors/" style="text-decoration: none; color: #fff;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40">
-            <rect width="160" height="40" rx="6" fill="#4299e1"/>
-            <text x="80" y="25" font-family="Arial, sans-serif" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">View Contributors</text>
-          </svg>
-        </a>
-      </td>
-      <td align="center" style="padding: 10px; border: none;">
-        <a href="http://makeapullrequest.com" style="text-decoration: none; color: #fff;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40">
-            <rect width="160" height="40" rx="6" fill="#48bb78"/>
-            <text x="80" y="25" font-family="Arial, sans-serif" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">PRs Welcome!</text>
-          </svg>
-        </a>
-      </td>
-    </tr>
-  </table>
+  <!-- Custom Designed Badges using Base64 Encoded SVGs -->
+  <p align="center">
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAxNDAgNDAiPjxyZWN0IHdpZHRoPSIxNDAiIGhlaWdodD0iNDAiIHJ4PSI2IiBmaWxsPSIjZjZlMDVlIi8+PHRleHQgeD0iNzAiIHk9IjI1IiBmb250LWZhbWlseT0iRGVqYVZ1IFNhbnMsIHZlcmRhbmEsIGdlbmV2YSLCyY-344KM44GN44Gu44Go44GW44GNLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMzMzMzMzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXdlaWdodD0iYm9sZCI+TElDRU5TRTogTUlUPC90ZXh0Pjwvc3ZnPg==" alt="License: MIT">
+    </a>
+    &nbsp;
+    <a href="https://gitHub.com/tripathiji1312/learn_buddy/graphs/contributors/">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNzUiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAxNzUgNDAiPjxyZWN0IHdpZHRoPSIxNzUiIGhlaWdodD0iNDAiIHJ4PSI2IiBmaWxsPSIjNDI5OWUxIi8+PHRleHQgeD0iODcuNSIgeT0iMjUiIGZvbnQtZmFtaWx5PSJEZWphVnUgU2FucywgdmVyZGFuYSwgZ2VuZXZhLCzLj7fjgozjjY3jga7jgahp44ZZjY0sIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNGRkZGRkYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSJib2xkIj5WSUVXIENPTlRSSUJVVE9SUzwvdGV4dD48L3N2Zz4=" alt="View Contributors">
+    </a>
+    &nbsp;
+    <a href="http://makeapullrequest.com">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAxNjAgNDAiPjxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iNDAiIHJ4PSI2IiBmaWxsPSIjNDhiYjc4Ii8+PHRleHQgeD0iODAiIHk9IjI1IiBmb250LWZhbWlseT0iRGVqYVZ1IFNhbnMsIHZlcmRhbmEsIGdlbmV2YSLCyY-344KM44GN44Gu44Go44GW44GNLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXdlaWdodD0iYm9sZCI+UFJzIFdFTENPTUUhPC90ZXh0Pjwvc3ZnPg==" alt="PRs Welcome">
+    </a>
+  </p>
 </div>
 
 ---
@@ -50,14 +33,14 @@ This is a community-driven project. We believe that by working together, we can 
 
 ## 🚀 Key Features
 
-| Feature | Description |
-|---|---|
+| Feature                 | Description                                                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | **🧠 Adaptive AI Engine** | A reinforcement learning model adapts question difficulty in real-time, ensuring every learner is perfectly challenged. |
-| **🎮 Gamified Experience** | Learners earn XP, unlock achievements, and maintain "streaks," transforming learning into a motivating game. |
-| **♿ Accessibility First** | Built from the ground up for universal access with features like high-contrast themes, keyboard navigation, and voice commands. |
-| **🤖 NLP-Powered Evaluation**| Uses Sentence-Transformers to understand the semantic meaning of answers for flexible and intelligent grading. |
-| **🛡️ Secure Admin Panel** | A comprehensive dashboard for platform management, user administration, and content curation. |
-| **📦 Fully Containerized** | Easy to set up and deploy locally with Docker and Docker Compose. |
+| **🎮 Gamified Experience** | Learners earn XP, unlock achievements, and maintain "streaks," transforming learning into a motivating game.     |
+| **♿ Accessibility First**  | Built from the ground up for universal access with features like high-contrast themes, keyboard navigation, and voice commands. |
+| **🤖 NLP-Powered Evaluation**| Uses Sentence-Transformers to understand the semantic meaning of answers for flexible and intelligent grading.      |
+| **🛡️ Secure Admin Panel**   | A comprehensive dashboard for platform management, user administration, and content curation.                      |
+| **📦 Fully Containerized**  | Easy to set up and deploy locally with Docker and Docker Compose.                                                 |
 
 ---
 
@@ -65,10 +48,10 @@ This is a community-driven project. We believe that by working together, we can 
 
 Contributing to LearnBuddy means you're helping to build a more equitable and effective educational future. Whether you're a seasoned developer, a UX designer, an educator, or just starting your coding journey, your input is valuable.
 
-*   **Make a Real-World Impact**: Your code will directly help children learn more effectively.
-*   **Work with Modern Tech**: Get hands-on experience with FastAPI, PostgreSQL, AI/ML models, and Docker.
-*   **Join a Welcoming Community**: We are committed to creating a supportive and collaborative environment.
-*   **Build Your Portfolio**: Showcase your skills on a meaningful open-source project.
+-   **Make a Real-World Impact**: Your code will directly help children learn more effectively.
+-   **Work with Modern Tech**: Get hands-on experience with FastAPI, PostgreSQL, AI/ML models, and Docker.
+-   **Join a Welcoming Community**: We are committed to creating a supportive and collaborative environment.
+-   **Build Your Portfolio**: Showcase your skills on a meaningful open-source project.
 
 ---
 
@@ -78,8 +61,8 @@ Follow these instructions to get the project up and running locally.
 
 ### Prerequisites
 
-*   **Docker & Docker Compose**: [Install Docker Desktop](https://www.docker.com/products/docker-desktop).
-*   **Git**: For cloning the repository.
+-   **Docker & Docker Compose**: [Install Docker Desktop](https://www.docker.com/products/docker-desktop).
+-   **Git**: For cloning the repository.
 
 ### Installation & Setup
 
@@ -100,15 +83,15 @@ Follow these instructions to get the project up and running locally.
     ```
 
 4.  **Start the Frontend**
-    *   Install the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension in VS Code.
-    *   Right-click on `index.html` and select **"Open with Live Server"**.
+    -   Install the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension in VS Code.
+    -   Right-click on `index.html` and select **"Open with Live Server"**.
 
 ### Usage
 
-*   **Learner App**: `http://127.0.0.1:5500/`
-    *   **Test User**: `testuser` / `testpass`
-*   **Admin Panel**: `http://127.0.0.1:5500/admin-login.html`
-    *   **Admin User**: `admin` / `adminpassword`
+-   **Learner App**: `http://127.0.0.1:5500/`
+    -   **Test User**: `testuser` / `testpass`
+-   **Admin Panel**: `http://127.0.0.1:5500/admin-login.html`
+    -   **Admin User**: `admin` / `adminpassword`
 
 ---
 
@@ -119,10 +102,10 @@ We welcome contributions of all kinds! Here’s how you can get started:
 1.  **Join the Discussion**: Check out the [Issues tab](https://github.com/your-username/learnbuddy/issues).
 2.  **Pick an Issue**: Look for issues tagged with `good first issue` or `help wanted`.
 3.  **Follow the Contribution Workflow**:
-    *   Create a new branch: `git checkout -b feature/your-feature-name`
-    *   Commit your changes: `git commit -m 'feat: Add your new feature'`
-    *   Push to your branch: `git push origin feature/your-feature-name`
-    *   Open a **Pull Request**.
+    -   Create a new branch: `git checkout -b feature/your-feature-name`
+    -   Commit your changes: `git commit -m 'feat: Add your new feature'`
+    -   Push to your branch: `git push origin feature/your-feature-name`
+    -   Open a **Pull Request**.
 
 Please read our `CONTRIBUTING.md` file for more detailed guidelines.
 
@@ -130,12 +113,12 @@ Please read our `CONTRIBUTING.md` file for more detailed guidelines.
 
 ## 🗺️ Project Roadmap
 
-*   [ ] **More Learning Modules**: Reading Comprehension, Science, and History.
-*   [ ] **Advanced Analytics**: Detailed progress dashboards for parents and educators.
-*   [ ] **"Study Buddies" Feature**: Collaborative challenges for learners.
-*   [ ] **Internationalization (i18n)**: Translate the platform into multiple languages.
-*   [ ] **Enhanced AI**: Evolve the recommendation engine to suggest new topics and identify learning gaps.
-*   [ ] **CI/CD Pipeline**: Automate testing and deployment workflows.
+-   [ ] **More Learning Modules**: Reading Comprehension, Science, and History.
+-   [ ] **Advanced Analytics**: Detailed progress dashboards for parents and educators.
+-   [ ] **"Study Buddies" Feature**: Collaborative challenges for learners.
+-   [ ] **Internationalization (i18n)**: Translate the platform into multiple languages.
+-   [ ] **Enhanced AI**: Evolve the recommendation engine to suggest new topics and identify learning gaps.
+-   [ ] **CI/CD Pipeline**: Automate testing and deployment workflows.
 
 ---
 
