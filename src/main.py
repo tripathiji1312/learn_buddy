@@ -8,6 +8,7 @@ from datetime import timedelta, date, datetime
 import random
 from jose import jwt, JWTError
 from typing import List, Optional
+import os
 
 # --- Import our custom modules ---
 # MODIFIED: Import the new, advanced functions
@@ -34,6 +35,10 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+similarity_model = SentenceTransformer(
+    'all-MiniLM-L6-v2',
+    cache_folder=os.environ.get('TRANSFORMERS_CACHE', './model_cache')
 )
 
 # --- Pydantic Models for API Data (Unchanged) ---
@@ -215,11 +220,17 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @app.post("/next_question", summary="Get the next AI-selected question (Protected)", tags=["Learner"])
 def get_next_question(req: NextQuestionRequest, current_user: User = Depends(get_current_user)):
-    # MODIFIED: Use the new function from learning_models.py
+    # The AI decides the IDEAL difficulty
     optimal_difficulty = select_difficulty_ultra_responsive(current_user.id, req.lesson_id)
-    question_id, question_text = select_question(optimal_difficulty, req.lesson_id)
-    if question_id is None: raise HTTPException(status_code=404, detail="No questions found for this difficulty.")
-    return {"difficulty_level": optimal_difficulty, "question_id": question_id, "question_text": question_text}
+    
+    # Unpack the THREE values from the new select_question function
+    question_id, question_text, actual_difficulty = select_question(optimal_difficulty, req.lesson_id)
+    
+    if question_id is None:
+        raise HTTPException(status_code=404, detail="No questions found for this lesson.")
+        
+    # Return the ACTUAL difficulty of the question served
+    return {"difficulty_level": actual_difficulty, "question_id": question_id, "question_text": question_text}
 
 @app.post("/submit_answer", summary="Submit an answer (Protected)", tags=["Learner"])
 def submit_answer(submission: AnswerSubmission, current_user: User = Depends(get_current_user)):
