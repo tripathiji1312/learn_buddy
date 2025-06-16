@@ -2668,3 +2668,37 @@ body.high-contrast .progress-bar {
     font-size: 0.875rem;
     color: var(--gray-400);
 }
+/* --- NEW: Question View Difficulty Display --- */
+.question-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-card);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-glow);
+}
+
+.question-meta span {
+    font-weight: 600;
+    color: var(--text-medium);
+    font-size: 0.9rem;
+}
+
+.difficulty-stars {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.difficulty-stars i {
+    font-size: 1.1rem;
+    color: var(--border-glow);
+    /* Default color for empty stars */
+    transition: color 0.3s ease;
+}
+
+.difficulty-stars i.filled {
+    color: var(--accent-pink);
+    /* Glowing color for filled stars */
+    text-shadow: 0 0 10px var(--accent-pink);
+}

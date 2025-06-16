@@ -10,24 +10,23 @@ from jose import jwt, JWTError
 from typing import List, Optional
 
 # --- Import our custom modules ---
+# MODIFIED: Import the new, advanced functions
 from .learning_models import (
-    select_difficulty_epsilon_greedy,
-    update_bandit_state,
-    check_semantic_similarity
+    select_difficulty_ultra_responsive,
+    update_bandit_state_enhanced
 )
 from .adaptive_engine import get_db_connection, select_question
 from . import security
 from .db_models import User
 
+# MODIFIED: Add SentenceTransformer imports directly, as it's no longer in learning_models.py
+from sentence_transformers import SentenceTransformer, util
+
 # --- Basic App Setup ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 app = FastAPI(title="LearnBuddy AI Engine", version="1.0.0")
 
-origins = [
-    "http://localhost",
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-]
+origins = [ "http://localhost", "http://localhost:5500", "http://127.0.0.1:5500" ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,9 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Pydantic Models for API Data ---
-
-# User Models
+# --- Pydantic Models for API Data (Unchanged) ---
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
@@ -48,12 +45,10 @@ class UserCreate(BaseModel):
 class UserInDB(User):
     is_admin: bool = False
 
-# Token Model
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-# Learning Models
 class NextQuestionRequest(BaseModel):
     lesson_id: int
 
@@ -63,7 +58,6 @@ class AnswerSubmission(BaseModel):
     difficulty_answered: int
     user_answer: str
 
-# Gamification Models
 class QuestResponse(BaseModel):
     title: str
     description: str
@@ -81,8 +75,8 @@ class AchievementResponse(BaseModel):
     description: str
     icon_class: str
     unlocked_at: datetime
-
-# Admin Panel User Management Models
+    
+# Admin Models (Unchanged)
 class UserAdminCreate(BaseModel):
     username: str
     email: EmailStr
@@ -104,7 +98,6 @@ class UserAdminResponse(BaseModel):
     xp: int
     is_admin: bool
 
-# Admin Panel Question Models
 class QuestionAdmin(BaseModel):
     id: int
     lesson_id: int
@@ -123,53 +116,35 @@ class AdminStats(BaseModel):
     total_answers_submitted: int
     questions_by_difficulty: dict
 
+# --- Load Similarity Model on Startup ---
+similarity_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# --- Achievement Helper Function ---
+
+# --- Achievement Helper Function (Unchanged) ---
 def check_and_award_achievements(user_id: int, conn, cur):
-    """
-    Checks user stats against unearned achievements and awards them if criteria are met.
-    """
-    cur.execute("""
-        SELECT id, name, criteria_type, criteria_value, xp_reward FROM achievements
-        WHERE id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = %s)
-    """, (user_id,))
+    cur.execute("SELECT id, name, criteria_type, criteria_value, xp_reward FROM achievements WHERE id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = %s)", (user_id,))
     unearned_achievements = cur.fetchall()
-
-    if not unearned_achievements:
-        return
-
+    if not unearned_achievements: return
     cur.execute("SELECT streak_count FROM users WHERE id = %s", (user_id,))
     user_stats = cur.fetchone()
-    
     cur.execute("SELECT COUNT(*) FROM user_progress WHERE user_id = %s", (user_id,))
     total_answers = cur.fetchone()['count']
-    
     cur.execute("SELECT COUNT(*) FROM user_progress WHERE user_id = %s AND is_correct = TRUE", (user_id,))
     total_correct_answers = cur.fetchone()['count']
-
     xp_to_add = 0
     for achievement in unearned_achievements:
         unlocked = False
-        if achievement['criteria_type'] == 'STREAK' and user_stats['streak_count'] >= achievement['criteria_value']:
-            unlocked = True
-        elif achievement['criteria_type'] == 'ANSWERS_TOTAL' and total_answers >= achievement['criteria_value']:
-            unlocked = True
-        elif achievement['criteria_type'] == 'CORRECT_ANSWERS_TOTAL' and total_correct_answers >= achievement['criteria_value']:
-            unlocked = True
-        
+        if achievement['criteria_type'] == 'STREAK' and user_stats['streak_count'] >= achievement['criteria_value']: unlocked = True
+        elif achievement['criteria_type'] == 'ANSWERS_TOTAL' and total_answers >= achievement['criteria_value']: unlocked = True
+        elif achievement['criteria_type'] == 'CORRECT_ANSWERS_TOTAL' and total_correct_answers >= achievement['criteria_value']: unlocked = True
         if unlocked:
-            cur.execute(
-                "INSERT INTO user_achievements (user_id, achievement_id) VALUES (%s, %s)",
-                (user_id, achievement['id'])
-            )
+            cur.execute("INSERT INTO user_achievements (user_id, achievement_id) VALUES (%s, %s)", (user_id, achievement['id']))
             xp_to_add += achievement['xp_reward']
             logging.info(f"User {user_id} unlocked achievement '{achievement['name']}'!")
-    
-    if xp_to_add > 0:
-        cur.execute("UPDATE users SET xp = xp + %s WHERE id = %s", (xp_to_add, user_id))
+    if xp_to_add > 0: cur.execute("UPDATE users SET xp = xp + %s WHERE id = %s", (xp_to_add, user_id))
 
 
-# --- Security & Dependencies ---
+# --- Security & Dependencies (Unchanged) ---
 def get_current_user(token: str = Depends(security.oauth2_scheme)) -> User:
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
     try:
@@ -177,14 +152,12 @@ def get_current_user(token: str = Depends(security.oauth2_scheme)) -> User:
         username: str = payload.get("sub")
         if username is None: raise credentials_exception
     except JWTError: raise credentials_exception
-    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT id, username, email, xp, is_admin FROM users WHERE username = %s", (username,))
     user_data = cur.fetchone()
     cur.close()
     conn.close()
-    
     if user_data is None: raise credentials_exception
     return UserInDB.model_validate(dict(user_data))
 
@@ -197,6 +170,7 @@ def get_current_admin_user(current_user: UserInDB = Depends(get_current_user)) -
 # --- Learner Endpoints ---
 @app.post("/signup", summary="Create a new user", status_code=status.HTTP_201_CREATED)
 def create_user_learner(user: UserCreate):
+    # This function is unchanged
     hashed_password = security.get_password_hash(user.password)
     conn = get_db_connection()
     cur = conn.cursor()
@@ -214,46 +188,42 @@ def create_user_learner(user: UserCreate):
 
 @app.post("/token", response_model=Token, summary="User login")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    # This function is unchanged
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT * FROM users WHERE username = %s", (form_data.username,))
     user = cur.fetchone()
-    
     if not user or not security.verify_password(form_data.password, user['password_hash']):
         cur.close()
         conn.close()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
-    
     today = date.today()
     last_login = user['last_login_date']
     new_streak = user['streak_count']
-    if last_login is None:
-        new_streak = 1
+    if last_login is None: new_streak = 1
     elif last_login < today:
         if last_login == today - timedelta(days=1): new_streak += 1
         else: new_streak = 1
-    
     cur.execute("UPDATE users SET streak_count = %s, last_login_date = %s WHERE id = %s", (new_streak, today, user['id']))
-    
     check_and_award_achievements(user['id'], conn, cur)
     conn.commit()
-    
     cur.close()
     conn.close()
-
     access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(data={"sub": user['username']}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/next_question", summary="Get the next AI-selected question (Protected)", tags=["Learner"])
 def get_next_question(req: NextQuestionRequest, current_user: User = Depends(get_current_user)):
-    optimal_difficulty = select_difficulty_epsilon_greedy(current_user.id, req.lesson_id)
+    # MODIFIED: Use the new function from learning_models.py
+    optimal_difficulty = select_difficulty_ultra_responsive(current_user.id, req.lesson_id)
     question_id, question_text = select_question(optimal_difficulty, req.lesson_id)
     if question_id is None: raise HTTPException(status_code=404, detail="No questions found for this difficulty.")
     return {"difficulty_level": optimal_difficulty, "question_id": question_id, "question_text": question_text}
 
 @app.post("/submit_answer", summary="Submit an answer (Protected)", tags=["Learner"])
 def submit_answer(submission: AnswerSubmission, current_user: User = Depends(get_current_user)):
+    # MODIFIED: Logic updated to use new functions
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
@@ -262,9 +232,21 @@ def submit_answer(submission: AnswerSubmission, current_user: User = Depends(get
         if not result: raise HTTPException(status_code=404, detail="Question ID not found.")
         
         correct_answer = result['correct_answer_text']
-        is_correct, score = check_semantic_similarity(submission.user_answer, correct_answer)
         
-        update_bandit_state(current_user.id, submission.lesson_id, submission.difficulty_answered, is_correct)
+        # Perform similarity check directly in the endpoint
+        embedding1 = similarity_model.encode(submission.user_answer.lower().strip(), convert_to_tensor=True)
+        embedding2 = similarity_model.encode(correct_answer.lower().strip(), convert_to_tensor=True)
+        similarity_score = util.cos_sim(embedding1, embedding2).item()
+        is_correct = similarity_score > 0.8
+        
+        # Call the new, enhanced update function
+        update_bandit_state_enhanced(
+            user_id=current_user.id, 
+            lesson_id=submission.lesson_id, 
+            difficulty=submission.difficulty_answered, 
+            was_correct=is_correct
+        )
+        
         cur.execute("INSERT INTO user_progress (user_id, question_id, is_correct) VALUES (%s, %s, %s);", (current_user.id, submission.question_id, is_correct))
         
         xp_gain = 10 if is_correct else 0
@@ -287,13 +269,14 @@ def submit_answer(submission: AnswerSubmission, current_user: User = Depends(get
         check_and_award_achievements(current_user.id, conn, cur)
         conn.commit()
 
-        return {"status": "Answer processed", "is_correct": is_correct, "similarity_score": round(score, 2), "quest_completed": quest_completed_this_turn}
+        return {"status": "Answer processed", "is_correct": is_correct, "similarity_score": round(similarity_score, 2), "quest_completed": quest_completed_this_turn}
     finally:
         cur.close()
         conn.close()
 
 @app.get("/users/me/stats", response_model=UserStatsResponse, summary="Get current user's stats (Protected)", tags=["Learner"])
 def get_user_stats(current_user: User = Depends(get_current_user)):
+    # This function is unchanged
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT xp, streak_count FROM users WHERE id = %s", (current_user.id,))
@@ -305,6 +288,7 @@ def get_user_stats(current_user: User = Depends(get_current_user)):
 
 @app.get("/quests/today", response_model=QuestResponse, summary="Get today's quest (Protected)", tags=["Learner"])
 def get_daily_quest(current_user: User = Depends(get_current_user)):
+    # This function is unchanged
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT q.title, q.description, uq.current_progress, q.completion_target, q.xp_reward, uq.is_completed FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;", (current_user.id,))
@@ -324,29 +308,16 @@ def get_daily_quest(current_user: User = Depends(get_current_user)):
     conn.close()
     return QuestResponse(**quest_data)
 
-# Replace the old get_user_achievements function with this one
-
 @app.get("/achievements", response_model=List[AchievementResponse], summary="Get user's unlocked achievements", tags=["Learner"])
 def get_user_achievements(current_user: User = Depends(get_current_user)):
-    """
-    Returns a list of all achievements the current user has unlocked.
-    """
+    # This function is unchanged
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute("""
-        SELECT a.name, a.description, a.icon_class, ua.unlocked_at
-        FROM user_achievements ua
-        JOIN achievements a ON ua.achievement_id = a.id
-        WHERE ua.user_id = %s
-        ORDER BY ua.unlocked_at DESC;
-    """, (current_user.id,))
-    achievements_data = cur.fetchall()
+    cur.execute("SELECT a.name, a.description, a.icon_class, ua.unlocked_at FROM user_achievements ua JOIN achievements a ON ua.achievement_id = a.id WHERE ua.user_id = %s ORDER BY ua.unlocked_at DESC;", (current_user.id,))
+    achievements = cur.fetchall()
     cur.close()
     conn.close()
-    
-    # THE FIX: Manually create a list of AchievementResponse objects.
-    # This ensures the data perfectly matches the response model.
-    return [AchievementResponse(**ach) for ach in achievements_data]
+    return [AchievementResponse(**ach) for ach in achievements]
 
 
 # ===================================================================

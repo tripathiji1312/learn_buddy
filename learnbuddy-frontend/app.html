@@ -19,7 +19,6 @@
                     <i class="fas fa-robot"></i>
                     <span>LearnBuddy</span>
                 </div>
-                <!-- THIS IS THE MISSING PIECE -->
                 <div class="user-greeting">
                     <h2>Welcome back, <span id="username-display">Learner</span>!</h2>
                     <p>Ready for today's learning adventure?</p>
@@ -28,10 +27,8 @@
                     <div class="control-group">
                         <label for="high-contrast-toggle" class="sr-only">High Contrast</label>
                         <i class="fas fa-adjust"></i>
-                        <label class="switch">
-                            <input type="checkbox" id="high-contrast-toggle">
-                            <span class="slider round"></span>
-                        </label>
+                        <label class="switch"><input type="checkbox" id="high-contrast-toggle"><span
+                                class="slider round"></span></label>
                     </div>
                     <div class="control-group">
                         <i class="fas fa-text-height"></i>
@@ -44,25 +41,16 @@
             </div>
             <div class="header-right">
                 <div class="user-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-fire"></i>
-                        <div class="stat-info">
-                            <span class="stat-value" id="streak-count">0</span>
-                            <span class="stat-label">Day Streak</span>
-                        </div>
+                    <div class="stat-item"><i class="fas fa-fire"></i>
+                        <div class="stat-info"><span class="stat-value" id="streak-count">0</span><span
+                                class="stat-label">Day Streak</span></div>
                     </div>
-                    <div class="stat-item">
-                        <i class="fas fa-star"></i>
-                        <div class="stat-info">
-                            <span class="stat-value" id="xp-count">0</span>
-                            <span class="stat-label">XP</span>
-                        </div>
+                    <div class="stat-item"><i class="fas fa-star"></i>
+                        <div class="stat-info"><span class="stat-value" id="xp-count">0</span><span
+                                class="stat-label">XP</span></div>
                     </div>
                 </div>
-                <button id="logout-btn" class="btn btn-outline">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </button>
+                <button id="logout-btn" class="btn btn-outline"><i class="fas fa-sign-out-alt"></i>Logout</button>
             </div>
         </div>
     </header>
@@ -77,17 +65,12 @@
                         <h3 id="quest-title">Today's Quest</h3>
                     </div>
                     <div class="quest-content" id="quest-content">
-                        <div class="quest-placeholder">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <div class="quest-placeholder"><i class="fas fa-spinner fa-spin"></i>
                             <h4>Loading your quest...</h4>
                         </div>
                     </div>
-                    <div class="quest-actions">
-                        <button id="next-question-btn" class="btn btn-primary">
-                            <i class="fas fa-arrow-right"></i>
-                            Continue Quest
-                        </button>
-                    </div>
+                    <div class="quest-actions"><button id="next-question-btn" class="btn btn-primary"><i
+                                class="fas fa-arrow-right"></i>Continue Quest</button></div>
                 </div>
                 <div class="progress-card">
                     <h3>Your Progress</h3>
@@ -97,27 +80,20 @@
                             <circle id="progress-circle" class="progress-circle" cx="60" cy="60" r="54" fill="none"
                                 stroke="#667eea" stroke-width="6" stroke-dasharray="340" stroke-dashoffset="340" />
                         </svg>
-                        <div class="progress-text">
-                            <span id="progress-percentage" class="progress-percentage">0%</span>
-                            <span class="progress-label">Complete</span>
-                        </div>
+                        <div class="progress-text"><span id="progress-percentage"
+                                class="progress-percentage">0%</span><span class="progress-label">Complete</span></div>
                     </div>
                     <div class="progress-stats">
-                        <div class="progress-stat">
-                            <span id="correct-answers" class="stat-number">0</span>
-                            <span class="stat-name">Correct</span>
-                        </div>
-                        <div class="progress-stat">
-                            <span id="total-questions" class="stat-number">0</span>
-                            <span class="stat-name">Total</span>
-                        </div>
+                        <div class="progress-stat"><span id="correct-answers" class="stat-number">0</span><span
+                                class="stat-name">Correct</span></div>
+                        <div class="progress-stat"><span id="total-questions" class="stat-number">0</span><span
+                                class="stat-name">Total</span></div>
                     </div>
                 </div>
                 <div class="achievements-card">
                     <h3>Recent Achievements</h3>
                     <div class="achievements-list" id="achievements-list">
-                        <div class="achievement-placeholder">
-                            <i class="fas fa-trophy"></i>
+                        <div class="achievement-placeholder"><i class="fas fa-trophy"></i>
                             <p>Complete your first quest to unlock achievements!</p>
                         </div>
                     </div>
@@ -128,17 +104,14 @@
         <!-- Question View -->
         <div id="question-view" class="view">
             <div class="question-container">
+                <!-- THE FIX IS HERE -->
                 <div class="question-header">
-                    <button id="back-to-dashboard-btn" class="btn btn-outline">
-                        <i class="fas fa-arrow-left"></i>
-                        Back to Dashboard
-                    </button>
-                    <div class="question-info">
-                        <span class="question-number">Question <span id="current-question-number">1</span></span>
-                        <div class="difficulty-indicator" id="question-difficulty-indicator">
-                            <i class="fas fa-star"></i>
-                            <span>Level 1</span>
-                        </div>
+                    <button id="back-to-dashboard-btn" class="btn btn-outline"><i class="fas fa-arrow-left"></i>Back to
+                        Dashboard</button>
+                    <div id="question-meta" class="question-meta">
+                        <span>Difficulty:</span>
+                        <div id="difficulty-stars" class="difficulty-stars"></div>
+                        <span id="difficulty-number" class="difficulty-number"></span>
                     </div>
                 </div>
                 <div class="question-card">
@@ -146,39 +119,27 @@
                         <p>Loading your personalized question...</p>
                     </div>
                     <div class="answer-section">
-                        <div class="form-group">
-                            <label for="user-answer">Your Answer:</label>
-                            <textarea id="user-answer" placeholder="Type your answer here..." rows="4"></textarea>
-                        </div>
+                        <div class="form-group"><label for="user-answer">Your Answer:</label><textarea id="user-answer"
+                                placeholder="Type your answer here..." rows="4"></textarea></div>
                         <div class="answer-actions">
-                            <button id="submit-answer-btn" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i>
-                                Submit Answer
-                            </button>
-                            <button id="skip-question-btn" class="btn btn-outline">
-                                <i class="fas fa-forward"></i>
-                                Skip Question
-                            </button>
+                            <button id="submit-answer-btn" class="btn btn-primary"><i
+                                    class="fas fa-paper-plane"></i>Submit Answer</button>
+                            <button id="skip-question-btn" class="btn btn-outline"><i class="fas fa-forward"></i>Skip
+                                Question</button>
                         </div>
                     </div>
                     <div id="answer-feedback" class="answer-feedback hidden">
                         <div class="feedback-content">
-                            <div class="feedback-icon" id="feedback-icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
+                            <div class="feedback-icon" id="feedback-icon"><i class="fas fa-check-circle"></i></div>
                             <div class="feedback-text">
                                 <h4 id="feedback-title">Great job!</h4>
                                 <p id="feedback-message">That's correct! You're doing amazing.</p>
-                                <div class="feedback-score">
-                                    <span>Similarity Score: </span>
-                                    <span id="similarity-score">95%</span>
-                                </div>
+                                <div class="feedback-score"><span>Similarity Score: </span><span
+                                        id="similarity-score">95%</span></div>
                             </div>
                         </div>
-                        <button id="continue-btn" class="btn btn-primary">
-                            <i class="fas fa-arrow-right"></i>
-                            Continue
-                        </button>
+                        <button id="continue-btn" class="btn btn-primary"><i
+                                class="fas fa-arrow-right"></i>Continue</button>
                     </div>
                 </div>
             </div>
@@ -197,8 +158,8 @@
     <div id="error-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Oops! Something went wrong</h3>
-                <button id="error-modal-close-btn" class="modal-close"><i class="fas fa-times"></i></button>
+                <h3>Oops! Something went wrong</h3><button id="error-modal-close-btn" class="modal-close"><i
+                        class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <p id="error-modal-text">We encountered an issue. Please try again.</p>

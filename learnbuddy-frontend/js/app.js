@@ -24,14 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const continueBtn = document.getElementById('continue-btn');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // Quest Elements
+    // Quest & Achievement Elements
     const questTitleEl = document.getElementById('quest-title');
     const questContentEl = document.getElementById('quest-content');
-    
-    // Achievement Elements - NEW
     const achievementsListEl = document.getElementById('achievements-list');
 
-    // Question Elements
+    // Question View Elements
     const questionTextEl = document.getElementById('question-text');
     const userAnswerTextarea = document.getElementById('user-answer');
     const feedbackContainer = document.getElementById('answer-feedback');
@@ -39,7 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedbackTitle = document.getElementById('feedback-title');
     const feedbackMessage = document.getElementById('feedback-message');
     const similarityScoreEl = document.getElementById('similarity-score');
-    
+    const difficultyStarsEl = document.getElementById('difficulty-stars');
+    const difficultyNumberEl = document.getElementById('difficulty-number');
+
     // Modals & Celebrations
     const errorModal = document.getElementById('error-modal');
     const errorModalText = document.getElementById('error-modal-text');
@@ -96,12 +96,50 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => celebrationEl.classList.add('hidden'), 2500);
     };
 
+    // --- UI Update Functions ---
+    // NEW, CORRECTED AND ROBUST VERSION
+    // NEW AND CORRECTED VERSION
+    const displayDifficulty = (level) => {
+        // THE FIX: Convert the 'level' to a number immediately.
+        const numericLevel = parseInt(level, 10);
+
+        difficultyNumberEl.textContent = `Lvl ${numericLevel}`;
+        difficultyStarsEl.innerHTML = '';
+
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement('i');
+            star.className = 'fas fa-star';
+            
+            // Now the comparison is between two numbers (e.g., 1 <= 1)
+            if (i <= numericLevel) {
+                star.classList.add('filled');
+            }
+            
+            difficultyStarsEl.appendChild(star);
+        }
+    };
+
+    const updateAchievementsUI = (achievements) => {
+        if (achievements.length === 0) {
+            achievementsListEl.innerHTML = `<div class="achievement-placeholder"><i class="fas fa-trophy"></i><p>Answer questions correctly to unlock achievements!</p></div>`;
+            return;
+        }
+        achievementsListEl.innerHTML = '';
+        achievements.forEach(ach => {
+            const item = document.createElement('div');
+            item.className = 'achievement-item';
+            item.innerHTML = `<div class="achievement-icon"><i class="${ach.icon_class}"></i></div><div class="achievement-details"><h4>${ach.name}</h4><p>${ach.description}</p></div>`;
+            achievementsListEl.appendChild(item);
+        });
+    };
+    
     // --- Main Application Logic ---
     const getNextQuestion = async () => {
         showLoading('Preparing your personalized question...');
         try {
             const data = await apiFetch('/next_question', { method: 'POST', body: JSON.stringify({ lesson_id: lessonId }) });
             currentQuestion = data;
+            displayDifficulty(data.difficulty_level);
             questionTextEl.textContent = data.question_text;
             userAnswerTextarea.value = '';
             submitAnswerBtn.disabled = false;
@@ -137,34 +175,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.is_correct) showCelebration('Correct!', `You earned +10 XP!`);
             if (result.quest_completed) setTimeout(() => showCelebration('Quest Complete!', `Awesome work!`), 1000);
             
-            loadInitialData();
-        } catch (error) { showError(error.message); submitAnswerBtn.disabled = false; } 
-        finally { hideLoading(); }
-    };
-
-    const updateAchievementsUI = (achievements) => {
-        if (achievements.length === 0) {
-            achievementsListEl.innerHTML = `
-                <div class="achievement-placeholder">
-                    <i class="fas fa-trophy"></i>
-                    <p>Answer questions correctly to unlock achievements!</p>
-                </div>`;
-            return;
+            // THE FIX: Do NOT call loadInitialData() here. It causes a race condition.
+            // Data will be reloaded when the user returns to the dashboard.
+            
+        } catch (error) { 
+            showError(error.message); 
+            submitAnswerBtn.disabled = false; 
+        } 
+        finally { 
+            hideLoading(); 
         }
-
-        achievementsListEl.innerHTML = '';
-        achievements.forEach(ach => {
-            const item = document.createElement('div');
-            item.className = 'achievement-item';
-            item.innerHTML = `
-                <div class="achievement-icon"><i class="${ach.icon_class}"></i></div>
-                <div class="achievement-details">
-                    <h4>${ach.name}</h4>
-                    <p>${ach.description}</p>
-                </div>
-            `;
-            achievementsListEl.appendChild(item);
-        });
     };
     
     const loadInitialData = async () => {
@@ -172,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const [stats, quest, achievements] = await Promise.all([
                 apiFetch('/users/me/stats'),
                 apiFetch('/quests/today'),
-                apiFetch('/achievements') // Fetch achievements
+                apiFetch('/achievements')
             ]);
 
             usernameDisplay.textContent = username;
@@ -191,8 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nextQuestionBtn.textContent = 'Continue Quest';
             }
             
-            updateAchievementsUI(achievements); // Display achievements
-
+            updateAchievementsUI(achievements);
         } catch (error) { showError(`Failed to load dashboard data: ${error.message}`); }
     };
 

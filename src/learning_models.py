@@ -1,256 +1,117 @@
 import numpy as np
 import logging
 import random
-import re
-import os
-from sentence_transformers import SentenceTransformer, util
-from .adaptive_engine import get_db_connection
-import psycopg2.extras
-from typing import Tuple, Optional, Dict, Any
+import math
+from typing import Dict, Any, List, Tuple
+from collections import deque
 import time
-from functools import lru_cache
+from dataclasses import dataclass
+# ADD THIS IMPORT AT THE TOP OF THE FILE
+from .adaptive_engine import get_db_connection
+import psycopg2.extras # Often needed with DictCursor
 
-# --- GLOBAL MODEL CACHE ---
-_model_cache = None
-_model_load_time = None
+@dataclass
+class PerformanceMetrics:
+    """Lightweight performance tracking structure."""
+    success_rate: float = 0.0
+    consecutive_correct: int = 0
+    consecutive_wrong: int = 0
+    recent_attempts: int = 0
+    avg_response_time: float = 0.0
+    difficulty_stability: float = 0.0
+    learning_velocity: float = 0.0
 
-def load_similarity_model():
-    """Load the similarity model with proper error handling, caching, and faster loading."""
-    global _model_cache, _model_load_time
-    
-    # Return cached model if available and loaded recently
-    if _model_cache is not None:
-        return _model_cache
-    
-    model_name = 'all-MiniLM-L6-v2'  # This is already a fast, lightweight model
-    cache_dir = os.environ.get('TRANSFORMERS_CACHE', './model_cache')
-    
-    try:
-        start_time = time.time()
-        logging.info("Loading Semantic Similarity model...")
-        
-        # Load with optimizations
-        model = SentenceTransformer(
-            model_name, 
-            cache_folder=cache_dir,
-            device='cpu'  # Explicitly use CPU for consistency
-        )
-        
-        # Cache the model globally
-        _model_cache = model
-        _model_load_time = time.time() - start_time
-        
-        logging.info(f"Semantic Similarity model loaded successfully in {_model_load_time:.2f}s")
-        return model
-        
-    except Exception as e:
-        logging.error(f"Failed to load model {model_name}: {str(e)}")
-        
-        # Try minimal fallback
-        try:
-            logging.info("Attempting fallback model loading...")
-            model = SentenceTransformer(model_name, cache_folder=cache_dir, use_auth_token=False)
-            _model_cache = model
-            return model
-        except Exception as e2:
-            logging.error(f"All model loading attempts failed: {str(e2)}")
-            _model_cache = None
-            return None
-
-# Initialize model on import
-similarity_model = load_similarity_model()
-
-@lru_cache(maxsize=1000)
-def cached_similarity_check(user_answer: str, correct_answer: str) -> Tuple[bool, float]:
-    """Cached version of similarity checking for repeated answer patterns."""
-    return _perform_similarity_check(user_answer, correct_answer)
-
-def extract_number(text: str, target_number: str = None) -> Optional[str]:
-    """Enhanced number extraction with better patterns."""
-    if not text:
-        return None
-        
-    if target_number:
-        # Look for the specific target number with word boundaries
-        patterns = [
-            r'\b' + re.escape(target_number) + r'\b',  # Exact word match
-            r'(?<!\d)' + re.escape(target_number) + r'(?!\d)',  # No adjacent digits
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, text)
-            if match:
-                return match.group(0)
-    
-    # Enhanced number finding patterns
-    patterns = [
-        r'\b\d+\.\d+\b',  # Decimals
-        r'\b\d+\b',       # Integers
-        r'\d+',           # Any digits
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, text)
-        if match:
-            return match.group(0)
-    
-    return None
-
-def _perform_similarity_check(user_answer: str, correct_answer: str) -> Tuple[bool, float]:
-    """Core similarity checking logic."""
-    if not user_answer or not correct_answer:
-        return False, 0.0
-    
-    # Fast numeric check first
-    if correct_answer.replace('.', '').isdigit():
-        extracted_number = extract_number(user_answer, correct_answer)
-        if extracted_number == correct_answer:
-            return True, 1.0
-        # Check for close numeric matches
-        try:
-            user_num = float(extract_number(user_answer) or '0')
-            correct_num = float(correct_answer)
-            if abs(user_num - correct_num) < 0.01:  # Very close numbers
-                return True, 0.95
-        except (ValueError, TypeError):
-            pass
-    
-    # Use similarity model if available
-    if similarity_model is not None:
-        try:
-            # Preprocess for better similarity
-            user_clean = user_answer.lower().strip()
-            correct_clean = correct_answer.lower().strip()
-            
-            embedding1 = similarity_model.encode(user_clean, convert_to_tensor=True)
-            embedding2 = similarity_model.encode(correct_clean, convert_to_tensor=True)
-            similarity_score = util.cos_sim(embedding1, embedding2).item()
-            
-            # More nuanced thresholds
-            if similarity_score > 0.85:
-                return True, similarity_score
-            elif similarity_score > 0.7:
-                # Additional checks for partial correctness
-                return _additional_similarity_checks(user_clean, correct_clean, similarity_score)
-            else:
-                return False, similarity_score
-                
-        except Exception as e:
-            logging.error(f"Error in semantic similarity: {str(e)}")
-    
-    # Enhanced fallback logic
-    return _fallback_similarity_check(user_answer, correct_answer)
-
-def _additional_similarity_checks(user_answer: str, correct_answer: str, base_score: float) -> Tuple[bool, float]:
-    """Additional checks for borderline similarity scores."""
-    user_words = set(user_answer.split())
-    correct_words = set(correct_answer.split())
-    
-    # Key word overlap
-    overlap_ratio = len(user_words.intersection(correct_words)) / max(len(correct_words), 1)
-    
-    # Boost score if good word overlap
-    if overlap_ratio > 0.6:
-        return True, min(base_score + 0.1, 1.0)
-    
-    # Check for containing relationship
-    if correct_answer in user_answer or user_answer in correct_answer:
-        return True, min(base_score + 0.05, 1.0)
-    
-    return base_score > 0.75, base_score
-
-def _fallback_similarity_check(user_answer: str, correct_answer: str) -> Tuple[bool, float]:
-    """Enhanced fallback when model is unavailable."""
-    user_clean = user_answer.lower().strip()
-    correct_clean = correct_answer.lower().strip()
-    
-    # Exact match
-    if user_clean == correct_clean:
-        return True, 1.0
-    
-    # Containment check
-    if correct_clean in user_clean:
-        return True, 0.9
-    if user_clean in correct_clean:
-        return True, 0.8
-    
-    # Word-based similarity
-    user_words = set(user_clean.split())
-    correct_words = set(correct_clean.split())
-    
-    if correct_words:
-        overlap = len(user_words.intersection(correct_words))
-        total_words = len(correct_words)
-        similarity = overlap / total_words
-        
-        return similarity > 0.6, similarity
-    
-    return False, 0.0
-
-def check_semantic_similarity(user_answer: str, correct_answer: str) -> Tuple[bool, float]:
-    """Main interface for similarity checking with caching."""
-    if not user_answer or not correct_answer:
-        return False, 0.0
-    
-    # Use cache for repeated patterns
-    return cached_similarity_check(user_answer.strip(), correct_answer.strip())
-
-class AdaptiveDifficultySelector:
-    """FIXED: Improved difficulty selection that can reach all 5 levels."""
+class EnhancedAdaptiveDifficultySelector:
+    """
+    Ultra-responsive difficulty selector with multiple adaptation strategies.
+    Features:
+    - Immediate response to performance changes
+    - Multiple learning rate strategies
+    - Confidence-based exploration
+    - Fast recovery mechanisms
+    - Performance momentum tracking
+    """
     
     def __init__(self):
-        self.min_attempts_for_stability = 3  # Minimum attempts before changing levels
-        self.success_threshold_up = 0.7       # Move up if ≥70% success (was 0.75)
-        self.success_threshold_down = 0.4     # Move down if <40% success  
-        self.confidence_boost = 0.1           # Boost for consecutive successes
-        self.struggle_penalty = 0.2           # Penalty for consecutive failures
-        self.exploration_rate = 0.1           # 10% chance to explore higher levels
+        # Core thresholds - more aggressive
+        self.immediate_promotion_threshold = 0.8    # Promote immediately at 80% success
+        self.immediate_demotion_threshold = 0.3     # Demote immediately below 30%
+        self.exploration_confidence = 0.75          # Explore higher levels at 75% confidence
+        
+        # Response speeds
+        self.min_attempts_fast_track = 2            # Fast decisions after just 2 attempts
+        self.min_attempts_stable = 5                # Stable decisions after 5 attempts
+        self.consecutive_threshold_up = 2           # Promote after 2 consecutive correct
+        self.consecutive_threshold_down = 2         # Demote after 2 consecutive wrong
+        
+        # Learning dynamics
+        self.momentum_weight = 0.3                  # Weight for learning momentum
+        self.recency_weight = 0.7                   # Weight recent performance more heavily
+        self.difficulty_change_cooldown = 0         # No cooldown for immediate response
+        
+        # Multi-armed bandit parameters
+        self.exploration_rate = 0.15                # Higher exploration
+        self.confidence_decay = 0.95                # Confidence decay per wrong answer
+        self.confidence_boost = 1.1                 # Confidence boost per correct answer
+        
+        # Performance windows
+        self.short_window = 3                       # Immediate reaction window
+        self.medium_window = 6                      # Trend analysis window
+        self.long_window = 12                       # Stability analysis window
+        
+        # User state tracking (in-memory for speed)
+        self.user_states = {}
+        
+    def _get_user_state(self, user_id: int, lesson_id: int) -> Dict:
+        """Get or create user state for fast access."""
+        key = f"{user_id}_{lesson_id}"
+        if key not in self.user_states:
+            self.user_states[key] = {
+                'current_difficulty': 1,
+                'confidence_scores': [0.5] * 5,  # Confidence for each difficulty level
+                'recent_performance': deque(maxlen=self.long_window),
+                'difficulty_history': deque(maxlen=20),
+                'learning_momentum': 0.0,
+                'last_update': time.time(),
+                'streak_counter': 0,
+                'struggle_counter': 0,
+                'exploration_debt': 0,  # Track when we should explore
+            }
+        return self.user_states[key]
     
-    def get_recent_performance(self, user_id: int, lesson_id: int, difficulty: int = None, limit: int = 8) -> Dict[str, Any]:
-        """Get recent performance metrics - looks at recent attempts across difficulties."""
+    def get_enhanced_performance_metrics(self, user_id: int, lesson_id: int, limit: int = 12) -> PerformanceMetrics:
+        """Get comprehensive performance metrics with better analysis."""
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
-        # Get recent attempts across ALL difficulty levels for this lesson
-        if difficulty is None:
-            # Get overall recent performance
-            cur.execute("""
-                SELECT up.is_correct, up.answered_at, q.difficulty_level
-                FROM user_progress up
-                JOIN questions q ON up.question_id = q.id
-                WHERE up.user_id = %s 
-                  AND q.lesson_id = %s 
-                ORDER BY up.answered_at DESC 
-                LIMIT %s
-            """, (user_id, lesson_id, limit))
-        else:
-            # Get performance for specific difficulty level
-            cur.execute("""
-                SELECT up.is_correct, up.answered_at, q.difficulty_level
-                FROM user_progress up
-                JOIN questions q ON up.question_id = q.id
-                WHERE up.user_id = %s 
-                  AND q.lesson_id = %s 
-                  AND q.difficulty_level = %s 
-                ORDER BY up.answered_at DESC 
-                LIMIT %s
-            """, (user_id, lesson_id, difficulty, limit))
+        # Get recent attempts with timing data
+        cur.execute("""
+            SELECT 
+                up.is_correct,
+                up.answered_at,
+                q.difficulty_level,
+                EXTRACT(EPOCH FROM (up.answered_at - LAG(up.answered_at) OVER (ORDER BY up.answered_at))) as response_time
+            FROM user_progress up
+            JOIN questions q ON up.question_id = q.id
+            WHERE up.user_id = %s AND q.lesson_id = %s
+            ORDER BY up.answered_at DESC
+            LIMIT %s
+        """, (user_id, lesson_id, limit))
         
-        recent_attempts = cur.fetchall()
+        attempts = cur.fetchall()
         cur.close()
         conn.close()
         
-        if not recent_attempts:
-            return {'recent_success_rate': 0, 'consecutive_correct': 0, 'consecutive_wrong': 0, 'total_attempts': 0}
+        if not attempts:
+            return PerformanceMetrics()
         
-        successes = sum(1 for attempt in recent_attempts if attempt['is_correct'])
-        recent_success_rate = successes / len(recent_attempts)
+        # Calculate metrics
+        correct_count = sum(1 for a in attempts if a['is_correct'])
+        success_rate = correct_count / len(attempts)
         
-        # Count consecutive results from most recent
-        consecutive_correct = 0
-        consecutive_wrong = 0
-        
-        for attempt in recent_attempts:
+        # Calculate consecutive streaks
+        consecutive_correct = consecutive_wrong = 0
+        for attempt in attempts:
             if attempt['is_correct']:
                 if consecutive_wrong == 0:
                     consecutive_correct += 1
@@ -262,275 +123,341 @@ class AdaptiveDifficultySelector:
                 else:
                     break
         
-        return {
-            'recent_success_rate': recent_success_rate,
-            'consecutive_correct': consecutive_correct,
-            'consecutive_wrong': consecutive_wrong,
-            'total_attempts': len(recent_attempts),
-            'attempts_data': recent_attempts
-        }
+        # Calculate learning velocity (improvement over time)
+        if len(attempts) >= 6:
+            recent_half = attempts[:len(attempts)//2]
+            older_half = attempts[len(attempts)//2:]
+            recent_success = sum(1 for a in recent_half if a['is_correct']) / len(recent_half)
+            older_success = sum(1 for a in older_half if a['is_correct']) / len(older_half)
+            learning_velocity = recent_success - older_success
+        else:
+            learning_velocity = 0.0
+        
+        # Calculate response time average
+        response_times = [a['response_time'] for a in attempts if a['response_time'] is not None]
+        avg_response_time = np.mean(response_times) if response_times else 0.0
+        
+        return PerformanceMetrics(
+            success_rate=success_rate,
+            consecutive_correct=consecutive_correct,
+            consecutive_wrong=consecutive_wrong,
+            recent_attempts=len(attempts),
+            avg_response_time=avg_response_time,
+            learning_velocity=learning_velocity,
+            difficulty_stability=self._calculate_difficulty_stability(attempts)
+        )
     
-    def get_level_specific_performance(self, user_id: int, lesson_id: int, difficulty: int, limit: int = 5) -> Dict[str, Any]:
-        """Get performance for a specific difficulty level."""
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    def _calculate_difficulty_stability(self, attempts: List) -> float:
+        """Calculate how stable the user is at their current difficulty."""
+        if len(attempts) < 4:
+            return 0.0
         
-        cur.execute("""
-            SELECT up.is_correct, up.answered_at
-            FROM user_progress up
-            JOIN questions q ON up.question_id = q.id
-            WHERE up.user_id = %s 
-              AND q.lesson_id = %s 
-              AND q.difficulty_level = %s 
-            ORDER BY up.answered_at DESC 
-            LIMIT %s
-        """, (user_id, lesson_id, difficulty, limit))
+        # Group by difficulty level and calculate stability
+        difficulty_performance = {}
+        for attempt in attempts:
+            diff = attempt['difficulty_level']
+            if diff not in difficulty_performance:
+                difficulty_performance[diff] = []
+            difficulty_performance[diff].append(attempt['is_correct'])
         
-        attempts = cur.fetchall()
-        cur.close()
-        conn.close()
+        # Calculate variance in performance across difficulties
+        stabilities = []
+        for diff, results in difficulty_performance.items():
+            if len(results) >= 2:
+                success_rate = sum(results) / len(results)
+                variance = np.var([1 if r else 0 for r in results])
+                stability = success_rate * (1 - variance)  # High success, low variance = stable
+                stabilities.append(stability)
         
-        if not attempts:
-            return {'success_rate': 0, 'total_attempts': 0}
-        
-        successes = sum(1 for attempt in attempts if attempt['is_correct'])
-        return {
-            'success_rate': successes / len(attempts),
-            'total_attempts': len(attempts)
-        }
+        return np.mean(stabilities) if stabilities else 0.0
     
-    def select_difficulty(self, user_id: int, lesson_id: int) -> int:
-        """FIXED: Adaptive difficulty selection that can reach all 5 levels."""
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    def select_difficulty_ultra_responsive(self, user_id: int, lesson_id: int) -> int:
+        """Ultra-responsive difficulty selection with multiple decision paths."""
+        try:
+            # Get user state and performance metrics
+            user_state = self._get_user_state(user_id, lesson_id)
+            metrics = self.get_enhanced_performance_metrics(user_id, lesson_id)
+            
+            current_difficulty = user_state['current_difficulty']
+            
+            # Update user state with recent performance
+            if metrics.recent_attempts > 0:
+                user_state['recent_performance'].extend([metrics.success_rate])
+                user_state['learning_momentum'] = (
+                    user_state['learning_momentum'] * 0.7 + 
+                    metrics.learning_velocity * 0.3
+                )
+            
+            # IMMEDIATE RESPONSE PATHS
+            
+            # 1. Crisis intervention - user is really struggling
+            if metrics.consecutive_wrong >= 3 or (metrics.recent_attempts >= 3 and metrics.success_rate <= 0.2):
+                new_difficulty = max(1, current_difficulty - 2)
+                user_state['struggle_counter'] = 0  # Reset struggle counter
+                logging.info(f"CRISIS INTERVENTION: Dropping to level {new_difficulty} (was {current_difficulty})")
+                return self._update_and_return(user_state, new_difficulty, "crisis_intervention")
+            
+            # 2. Hot streak - user is performing excellently
+            if metrics.consecutive_correct >= 3 or (metrics.recent_attempts >= 3 and metrics.success_rate >= 0.9):
+                if current_difficulty < 5:
+                    new_difficulty = min(5, current_difficulty + 1)
+                    logging.info(f"HOT STREAK: Promoting to level {new_difficulty} (was {current_difficulty})")
+                    return self._update_and_return(user_state, new_difficulty, "hot_streak")
+            
+            # 3. Fast track decisions (after minimal attempts)
+            if metrics.recent_attempts >= self.min_attempts_fast_track:
+                decision = self._fast_track_decision(user_state, metrics, current_difficulty)
+                if decision != current_difficulty:
+                    return self._update_and_return(user_state, decision, "fast_track")
+            
+            # 4. Confidence-based exploration
+            if self._should_explore(user_state, metrics):
+                exploration_level = self._get_exploration_level(user_state, metrics, current_difficulty)
+                if exploration_level != current_difficulty:
+                    logging.info(f"EXPLORATION: Trying level {exploration_level} (confidence-based)")
+                    return self._update_and_return(user_state, exploration_level, "exploration")
+            
+            # 5. Momentum-based adjustment
+            if abs(user_state['learning_momentum']) > 0.2:
+                momentum_decision = self._momentum_based_decision(user_state, metrics, current_difficulty)
+                if momentum_decision != current_difficulty:
+                    return self._update_and_return(user_state, momentum_decision, "momentum")
+            
+            # 6. Stability-based fine-tuning
+            if metrics.recent_attempts >= self.min_attempts_stable:
+                stable_decision = self._stability_based_decision(user_state, metrics, current_difficulty)
+                if stable_decision != current_difficulty:
+                    return self._update_and_return(user_state, stable_decision, "stability")
+            
+            # Default: stay at current level but update confidence
+            self._update_confidence_scores(user_state, metrics, current_difficulty)
+            logging.info(f"MAINTAINING: Level {current_difficulty} (SR: {metrics.success_rate:.2f})")
+            return current_difficulty
+            
+        except Exception as e:
+            logging.error(f"Error in ultra-responsive difficulty selection: {e}")
+            return 1  # Safe fallback
+    
+    def _fast_track_decision(self, user_state: Dict, metrics: PerformanceMetrics, current_difficulty: int) -> int:
+        """Make fast decisions after minimal attempts."""
         
-        # Get current bandit state
-        cur.execute("""
-            SELECT difficulty_level, times_selected, successful_outcomes 
-            FROM bandit_state 
-            WHERE user_id = %s AND lesson_id = %s
-            ORDER BY difficulty_level
-        """, (user_id, lesson_id))
+        # Immediate promotion conditions
+        if (metrics.consecutive_correct >= self.consecutive_threshold_up and 
+            metrics.success_rate >= self.immediate_promotion_threshold and 
+            current_difficulty < 5):
+            return min(5, current_difficulty + 1)
         
-        states = cur.fetchall()
-        cur.close()
-        conn.close()
+        # Immediate demotion conditions
+        if (metrics.consecutive_wrong >= self.consecutive_threshold_down or 
+            metrics.success_rate <= self.immediate_demotion_threshold) and current_difficulty > 1:
+            return max(1, current_difficulty - 1)
         
-        if not states:
-            logging.info(f"New user {user_id} for lesson {lesson_id}, starting at level 1")
-            return 1
+        return current_difficulty
+    
+    def _should_explore(self, user_state: Dict, metrics: PerformanceMetrics) -> bool:
+        """Determine if we should explore a different difficulty level."""
         
-        # Find current best performing difficulty
-        current_best = self._find_current_best(states)
+        # Don't explore if user is struggling
+        if metrics.success_rate < 0.6 or metrics.consecutive_wrong >= 2:
+            return False
         
-        # Get recent performance across all difficulties
-        recent_perf = self.get_recent_performance(user_id, lesson_id, difficulty=None)
+        # Explore if user is doing well and we haven't explored recently
+        if (metrics.success_rate >= self.exploration_confidence and 
+            user_state['exploration_debt'] <= 0 and
+            random.random() < self.exploration_rate):
+            user_state['exploration_debt'] = 3  # Explore, then wait 3 decisions
+            return True
         
-        if recent_perf['total_attempts'] == 0:
-            logging.info(f"No recent attempts found for user {user_id}, lesson {lesson_id}. Starting at level 1")
-            return 1
+        # Decay exploration debt
+        if user_state['exploration_debt'] > 0:
+            user_state['exploration_debt'] -= 1
         
-        # Get performance for current difficulty level specifically
-        current_level_perf = self.get_level_specific_performance(user_id, lesson_id, current_best)
+        return False
+    
+    def _get_exploration_level(self, user_state: Dict, metrics: PerformanceMetrics, current_difficulty: int) -> int:
+        """Choose exploration level based on confidence and performance."""
         
-        # Make adaptation decision
-        new_difficulty = self._make_adaptation_decision(current_best, recent_perf, current_level_perf, states)
+        confidence_scores = user_state['confidence_scores']
         
-        logging.info(f"User {user_id}: Current best {current_best}, Recent success rate: {recent_perf['recent_success_rate']:.2f}, "
-                    f"Current level attempts: {current_level_perf['total_attempts']}, "
-                    f"Current level success: {current_level_perf['success_rate']:.2f}, Selected: {new_difficulty}")
+        # Try one level up if doing very well
+        if (current_difficulty < 5 and 
+            metrics.success_rate >= 0.8 and 
+            confidence_scores[current_difficulty] > 0.7):
+            return current_difficulty + 1
+        
+        # Try one level down if confidence is low at current level
+        if (current_difficulty > 1 and 
+            confidence_scores[current_difficulty-1] < 0.4):
+            return current_difficulty - 1
+        
+        return current_difficulty
+    
+    def _momentum_based_decision(self, user_state: Dict, metrics: PerformanceMetrics, current_difficulty: int) -> int:
+        """Make decisions based on learning momentum."""
+        
+        momentum = user_state['learning_momentum']
+        
+        # Strong positive momentum - try harder content
+        if momentum > 0.3 and current_difficulty < 5 and metrics.success_rate >= 0.65:
+            return min(5, current_difficulty + 1)
+        
+        # Strong negative momentum - provide easier content
+        if momentum < -0.3 and current_difficulty > 1:
+            return max(1, current_difficulty - 1)
+        
+        return current_difficulty
+    
+    def _stability_based_decision(self, user_state: Dict, metrics: PerformanceMetrics, current_difficulty: int) -> int:
+        """Make decisions based on performance stability."""
+        
+        # If user is stable and successful, promote
+        if (metrics.difficulty_stability > 0.7 and 
+            metrics.success_rate >= 0.75 and 
+            current_difficulty < 5):
+            return current_difficulty + 1
+        
+        # If user is unstable or unsuccessful, demote
+        if (metrics.difficulty_stability < 0.3 or 
+            metrics.success_rate < 0.4) and current_difficulty > 1:
+            return current_difficulty - 1
+        
+        return current_difficulty
+    
+    def _update_confidence_scores(self, user_state: Dict, metrics: PerformanceMetrics, difficulty: int):
+        """Update confidence scores for all difficulty levels."""
+        
+        # Update confidence for current difficulty
+        if metrics.recent_attempts > 0:
+            current_confidence = user_state['confidence_scores'][difficulty-1]
+            
+            # Weighted update based on recent performance
+            new_confidence = (
+                current_confidence * (1 - self.recency_weight) + 
+                metrics.success_rate * self.recency_weight
+            )
+            
+            user_state['confidence_scores'][difficulty-1] = max(0.0, min(1.0, new_confidence))
+        
+    def _update_and_return(self, user_state: Dict, new_difficulty: int, reason: str) -> int:
+        """Update user state and return new difficulty."""
+        
+        old_difficulty = user_state['current_difficulty']
+        user_state['current_difficulty'] = new_difficulty
+        user_state['difficulty_history'].append((new_difficulty, time.time(), reason))
+        user_state['last_update'] = time.time()
+        
+        # Reset counters on difficulty change
+        if new_difficulty != old_difficulty:
+            user_state['streak_counter'] = 0
+            user_state['struggle_counter'] = 0
         
         return new_difficulty
     
-    def _find_current_best(self, states) -> int:
-        """Find the best performing difficulty level with better logic."""
-        best_difficulty = 1
-        best_score = -1
+    def update_bandit_state_enhanced(self, user_id: int, lesson_id: int, difficulty: int, 
+                                   was_correct: bool, response_time: float = None):
+        """Enhanced bandit state update with additional metrics."""
         
-        state_dict = {s['difficulty_level']: s for s in states}
-        
-        for level in sorted(state_dict.keys()):
-            state = state_dict[level]
-            if state['times_selected'] == 0:
-                continue
-                
-            success_rate = state['successful_outcomes'] / state['times_selected']
-            
-            # FIXED: Better scoring that doesn't over-penalize higher levels
-            # Only add small preference for higher levels if success rates are close
-            level_bonus = (level - 1) * 0.05  # Reduced from 0.1
-            score = success_rate + level_bonus
-            
-            if score > best_score:
-                best_score = score
-                best_difficulty = level
-        
-        return best_difficulty
-    
-    def _make_adaptation_decision(self, current_difficulty: int, recent_perf: Dict[str, Any], 
-                                 current_level_perf: Dict[str, Any], states) -> int:
-        """FIXED: Better adaptation logic that allows reaching level 5."""
-        success_rate = recent_perf['recent_success_rate']
-        consecutive_correct = recent_perf['consecutive_correct']
-        consecutive_wrong = recent_perf['consecutive_wrong']
-        total_attempts = recent_perf['total_attempts']
-        
-        current_level_success = current_level_perf['success_rate']
-        current_level_attempts = current_level_perf['total_attempts']
-        
-        # AGGRESSIVE downward adjustment for struggling users
-        if consecutive_wrong >= 3:
-            drop_amount = min(2, current_difficulty - 1)  # Drop 1-2 levels
-            new_level = max(current_difficulty - drop_amount, 1)
-            logging.info(f"STRUGGLING: Dropping {drop_amount} levels due to {consecutive_wrong} consecutive wrong")
-            return new_level
-        
-        # Drop for consistent poor performance
-        if total_attempts >= 4 and success_rate <= 0.3:
-            new_level = max(current_difficulty - 1, 1)
-            logging.info(f"LOW SUCCESS RATE: Dropping due to {success_rate:.1%} overall success")
-            return new_level
-        
-        # FIXED: More aggressive upward progression
-        # Promote based on consecutive correct answers (faster progression)
-        if consecutive_correct >= 2 and current_difficulty < 5:  # Reduced from 3
-            if success_rate >= 0.6:  # Reduced from 0.75
-                new_level = min(current_difficulty + 1, 5)
-                logging.info(f"FAST PROMOTION: {consecutive_correct} consecutive correct, success rate {success_rate:.1%}")
-                return new_level
-        
-        # FIXED: Level-specific performance check for promotion
-        if current_level_attempts >= self.min_attempts_for_stability and current_difficulty < 5:
-            if current_level_success >= self.success_threshold_up:  # 70% success at current level
-                new_level = min(current_difficulty + 1, 5)
-                logging.info(f"LEVEL MASTERY: Promoting from {current_difficulty} to {new_level}, "
-                           f"success rate at current level: {current_level_success:.1%}")
-                return new_level
-        
-        # FIXED: Exploration mechanism - occasionally try higher levels
-        if (current_difficulty < 5 and 
-            total_attempts >= 5 and 
-            success_rate >= 0.6 and 
-            random.random() < self.exploration_rate):
-            new_level = min(current_difficulty + 1, 5)
-            logging.info(f"EXPLORATION: Trying level {new_level} with {success_rate:.1%} success rate")
-            return new_level
-        
-        # FIXED: Better stability check - don't drop too quickly
-        if (total_attempts >= self.min_attempts_for_stability and 
-            current_level_success < self.success_threshold_down and 
-            current_difficulty > 1):
-            new_level = current_difficulty - 1
-            logging.info(f"DEMOTION: Dropping to {new_level}, current level success: {current_level_success:.1%}")
-            return new_level
-        
-        # Stay at current level
-        logging.info(f"STAYING: Level {current_difficulty}, overall success: {success_rate:.1%}, "
-                    f"current level success: {current_level_success:.1%}")
-        return current_difficulty
+        # Update database (existing functionality)
+        conn = get_db_connection()
+        cur = conn.cursor()
+        reward = 1 if was_correct else 0
 
-# Global instance
-difficulty_selector = AdaptiveDifficultySelector()
-
-def select_difficulty_epsilon_greedy(user_id: int, lesson_id: int) -> int:
-    """Improved difficulty selection with faster adaptation and debugging."""
-    try:
-        selected_difficulty = difficulty_selector.select_difficulty(user_id, lesson_id)
-        
-        # Additional debug logging
-        logging.info(f"DIFFICULTY SELECTOR DEBUG: User {user_id}, Lesson {lesson_id}, Selected: {selected_difficulty}")
-        
-        return selected_difficulty
-    except Exception as e:
-        logging.error(f"Error in difficulty selection: {e}")
-        # Fallback to level 1 if there's an error
-        return 1
-
-def update_bandit_state(user_id: int, lesson_id: int, difficulty: int, was_correct: bool):
-    """Enhanced bandit state update."""
-    conn = get_db_connection()
-    cur = conn.cursor()
-    reward = 1 if was_correct else 0
-
-    # Update bandit state
-    cur.execute("""
-        INSERT INTO bandit_state (user_id, lesson_id, difficulty_level, times_selected, successful_outcomes)
-        VALUES (%s, %s, %s, 1, %s) 
-        ON CONFLICT (user_id, lesson_id, difficulty_level)
-        DO UPDATE SET
-            times_selected = bandit_state.times_selected + 1,
-            successful_outcomes = bandit_state.successful_outcomes + %s
-    """, (user_id, lesson_id, difficulty, reward, reward))
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-def get_user_learning_stats(user_id: int, lesson_id: int) -> Dict[str, Any]:
-    """Get comprehensive learning statistics."""
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    
-    # Get bandit state stats
-    cur.execute("""
-        SELECT 
-            difficulty_level,
-            times_selected,
-            successful_outcomes,
-            CASE WHEN times_selected > 0 THEN successful_outcomes::float / times_selected ELSE 0 END as success_rate
-        FROM bandit_state 
-        WHERE user_id = %s AND lesson_id = %s
-        ORDER BY difficulty_level
-    """, (user_id, lesson_id))
-    
-    bandit_stats = cur.fetchall()
-    
-    # Get recent activity from user_progress
-    cur.execute("""
-        SELECT 
-            q.difficulty_level,
-            COUNT(*) as attempts,
-            SUM(CASE WHEN up.is_correct THEN 1 ELSE 0 END) as correct_answers,
-            MAX(up.answered_at) as last_attempt
-        FROM user_progress up
-        JOIN questions q ON up.question_id = q.id
-        WHERE up.user_id = %s AND q.lesson_id = %s
-        GROUP BY q.difficulty_level
-        ORDER BY q.difficulty_level
-    """, (user_id, lesson_id))
-    
-    progress_stats = cur.fetchall()
-    cur.close()
-    conn.close()
-    
-    return {
-        'bandit_stats': [dict(stat) for stat in bandit_stats],
-        'progress_stats': [dict(stat) for stat in progress_stats],
-        'total_attempts': sum(stat['times_selected'] for stat in bandit_stats),
-        'overall_success_rate': sum(stat['successful_outcomes'] for stat in bandit_stats) / max(sum(stat['times_selected'] for stat in bandit_stats), 1)
-    }
-
-def reset_user_progress(user_id: int, lesson_id: int = None):
-    """Reset user progress using existing tables."""
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    if lesson_id:
-        # Reset bandit state for specific lesson
-        cur.execute("DELETE FROM bandit_state WHERE user_id = %s AND lesson_id = %s", (user_id, lesson_id))
-        
-        # Reset user progress for specific lesson
         cur.execute("""
-            DELETE FROM user_progress 
-            WHERE user_id = %s 
-              AND question_id IN (SELECT id FROM questions WHERE lesson_id = %s)
-        """, (user_id, lesson_id))
-    else:
-        # Reset all progress for user
-        cur.execute("DELETE FROM bandit_state WHERE user_id = %s", (user_id,))
-        cur.execute("DELETE FROM user_progress WHERE user_id = %s", (user_id,))
+            INSERT INTO bandit_state (user_id, lesson_id, difficulty_level, times_selected, successful_outcomes)
+            VALUES (%s, %s, %s, 1, %s) 
+            ON CONFLICT (user_id, lesson_id, difficulty_level)
+            DO UPDATE SET
+                times_selected = bandit_state.times_selected + 1,
+                successful_outcomes = bandit_state.successful_outcomes + %s
+        """, (user_id, lesson_id, difficulty, reward, reward))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        # Update in-memory user state for immediate response
+        user_state = self._get_user_state(user_id, lesson_id)
+        
+        # Update counters
+        if was_correct:
+            user_state['streak_counter'] = user_state['streak_counter'] + 1
+            user_state['struggle_counter'] = 0
+            # Boost confidence
+            current_conf = user_state['confidence_scores'][difficulty-1]
+            user_state['confidence_scores'][difficulty-1] = min(1.0, current_conf * self.confidence_boost)
+        else:
+            user_state['struggle_counter'] = user_state['struggle_counter'] + 1
+            user_state['streak_counter'] = 0
+            # Decay confidence
+            current_conf = user_state['confidence_scores'][difficulty-1]
+            user_state['confidence_scores'][difficulty-1] = max(0.0, current_conf * self.confidence_decay)
+        
+        # Add performance data point
+        user_state['recent_performance'].append({
+            'correct': was_correct,
+            'difficulty': difficulty,
+            'timestamp': time.time(),
+            'response_time': response_time
+        })
+        
+        logging.info(f"Updated state for user {user_id}: streak={user_state['streak_counter']}, "
+                    f"struggle={user_state['struggle_counter']}, confidence={user_state['confidence_scores'][difficulty-1]:.2f}")
     
-    conn.commit()
-    cur.close()
-    conn.close()
-    logging.info(f"Reset progress for user {user_id}" + (f" lesson {lesson_id}" if lesson_id else " all lessons"))
+    def get_user_insights(self, user_id: int, lesson_id: int) -> Dict[str, Any]:
+        """Get comprehensive user learning insights."""
+        
+        user_state = self._get_user_state(user_id, lesson_id)
+        metrics = self.get_enhanced_performance_metrics(user_id, lesson_id)
+        
+        return {
+            'current_difficulty': user_state['current_difficulty'],
+            'confidence_scores': user_state['confidence_scores'],
+            'learning_momentum': user_state['learning_momentum'],
+            'streak_counter': user_state['streak_counter'],
+            'struggle_counter': user_state['struggle_counter'],
+            'success_rate': metrics.success_rate,
+            'consecutive_correct': metrics.consecutive_correct,
+            'consecutive_wrong': metrics.consecutive_wrong,
+            'difficulty_stability': metrics.difficulty_stability,
+            'learning_velocity': metrics.learning_velocity,
+            'recent_attempts': metrics.recent_attempts,
+            'difficulty_history': list(user_state['difficulty_history'])[-5:],  # Last 5 changes
+            'recommendation': self._get_learning_recommendation(user_state, metrics)
+        }
+    
+    def _get_learning_recommendation(self, user_state: Dict, metrics: PerformanceMetrics) -> str:
+        """Provide learning recommendations based on current state."""
+        
+        if metrics.consecutive_wrong >= 3:
+            return "Take a break and review easier concepts"
+        elif metrics.consecutive_correct >= 4:
+            return "You're on fire! Ready for more challenging content"
+        elif metrics.success_rate < 0.4:
+            return "Focus on mastering current level before advancing"
+        elif metrics.success_rate > 0.8 and metrics.difficulty_stability > 0.6:
+            return "Excellent progress! Time to level up"
+        elif user_state['learning_momentum'] > 0.3:
+            return "Great improvement trend - keep building on this progress"
+        elif user_state['learning_momentum'] < -0.3:
+            return "Consider reviewing fundamentals to build stronger foundation"
+        else:
+            return "Steady progress - maintain current practice routine"
+
+
+# Global enhanced instance
+enhanced_difficulty_selector = EnhancedAdaptiveDifficultySelector()
+
+def select_difficulty_ultra_responsive(user_id: int, lesson_id: int) -> int:
+    """Main interface for ultra-responsive difficulty selection."""
+    return enhanced_difficulty_selector.select_difficulty_ultra_responsive(user_id, lesson_id)
+
+def update_bandit_state_enhanced(user_id: int, lesson_id: int, difficulty: int, 
+                               was_correct: bool, response_time: float = None):
+    """Enhanced bandit state update with immediate response capabilities."""
+    enhanced_difficulty_selector.update_bandit_state_enhanced(
+        user_id, lesson_id, difficulty, was_correct, response_time
+    )
+
+def get_user_learning_insights(user_id: int, lesson_id: int) -> Dict[str, Any]:
+    """Get comprehensive user learning insights."""
+    return enhanced_difficulty_selector.get_user_insights(user_id, lesson_id)
