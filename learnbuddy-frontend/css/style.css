@@ -2495,3 +2495,36 @@ input:checked+.slider:before {
 .role-badge.admin {
     background-color: var(--success-color);
 }
+/* --- NEW: Quest Card Enhancements --- */
+.quest-description {
+    font-size: 1.1rem;
+    color: var(--gray-300);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.progress-bar-container {
+    width: 80%;
+    height: 20px;
+    background-color: #110e24;
+    border-radius: 10px;
+    margin: 0 auto 0.5rem;
+    border: 1px solid var(--gray-700);
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+}
+
+.quest-progress {
+    text-align: center;
+    font-weight: 600;
+    color: var(--gray-200);
+}
+
+#celebration-title {
+    margin-bottom: 0.5rem;
+}
