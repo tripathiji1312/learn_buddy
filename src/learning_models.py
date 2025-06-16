@@ -280,14 +280,12 @@ class EnhancedAdaptiveDifficultySelector:
         confidence_scores = user_state['confidence_scores']
         
         # Try one level up if doing very well
-        if (current_difficulty < 5 and 
-            metrics.success_rate >= 0.8 and 
-            confidence_scores[current_difficulty] > 0.7):
+        # CORRECTED LINE
+        if (current_difficulty < 5 and metrics.success_rate >= 0.8 and confidence_scores[current_difficulty - 1] > 0.7):
             return current_difficulty + 1
         
         # Try one level down if confidence is low at current level
-        if (current_difficulty > 1 and 
-            confidence_scores[current_difficulty-1] < 0.4):
+        if (current_difficulty > 1 and user_state['confidence_scores'][current_difficulty - 2] < 0.4):
             return current_difficulty - 1
         
         return current_difficulty
@@ -317,8 +315,7 @@ class EnhancedAdaptiveDifficultySelector:
             return current_difficulty + 1
         
         # If user is unstable or unsuccessful, demote
-        if (metrics.difficulty_stability < 0.3 or 
-            metrics.success_rate < 0.4) and current_difficulty > 1:
+        if (metrics.difficulty_stability < 0.3 and metrics.success_rate < 0.6) and current_difficulty > 1:
             return current_difficulty - 1
         
         return current_difficulty

@@ -26,23 +26,28 @@ def get_db_connection():
 
 def select_question(difficulty: int, lesson_id: int):
     """
-    Selects a random question from the database for a given difficulty and lesson.
-    Returns a tuple of (question_id, question_content).
+    Selects a random question from the database.
+    FIXED: Uses a single query with a smart fallback and always returns three values.
     """
     conn = get_db_connection()
-    # A DictCursor returns rows as dictionaries, which is cleaner to work with.
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
+    
     cur.execute(
-        "SELECT id, content FROM questions WHERE difficulty_level = %s AND lesson_id = %s;",
-        (difficulty, lesson_id)
+        """
+        SELECT id, content, difficulty_level 
+        FROM questions 
+        WHERE lesson_id = %s AND difficulty_level <= %s
+        ORDER BY difficulty_level DESC, RANDOM()
+        LIMIT 1;
+        """,
+        (lesson_id, difficulty)
     )
-    questions = cur.fetchall()
+    question = cur.fetchone()
     cur.close()
     conn.close()
-
-    if not questions:
-        return None, None
-
-    selected_question = random.choice(questions)
-    return selected_question['id'], selected_question['content']
+    
+    if question:
+        return question['id'], question['content'], question['difficulty_level']
+    else:
+        # Always return three values, even on failure
+        return None, None, None
