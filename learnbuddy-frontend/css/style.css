@@ -2528,3 +2528,104 @@ input:checked+.slider:before {
 #celebration-title {
     margin-bottom: 0.5rem;
 }
+/* --- NEW: Accessibility Controls --- */
+.accessibility-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-left: 2rem;
+    padding-left: 1.5rem;
+    border-left: 1px solid var(--gray-700);
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--gray-400);
+}
+
+.font-control-btn {
+    background: none;
+    border: 1px solid var(--gray-600);
+    color: var(--gray-300);
+    cursor: pointer;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.font-control-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Screen-reader only utility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+
+/* --- NEW: High Contrast Theme --- */
+body.high-contrast {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+body.high-contrast .app-header,
+body.high-contrast .quest-card,
+body.high-contrast .progress-card,
+body.high-contrast .achievements-card,
+body.high-contrast .question-card,
+body.high-contrast .modal-content {
+    background: #000000;
+    border: 2px solid #ffffff;
+}
+
+body.high-contrast h1,
+body.high-contrast h2,
+body.high-contrast h3,
+body.high-contrast h4,
+body.high-contrast p,
+body.high-contrast span,
+body.high-contrast label,
+body.high-contrast button {
+    color: #ffffff !important;
+}
+
+body.high-contrast .user-greeting p,
+body.high-contrast .stat-label,
+body.high-contrast .quest-description,
+body.high-contrast .quest-progress {
+    color: #dddddd !important;
+}
+
+body.high-contrast .btn-primary {
+    background: transparent;
+    border: 2px solid #FFFF00;
+    /* Bright yellow for primary actions */
+    color: #FFFF00 !important;
+}
+
+body.high-contrast .btn-outline {
+    border-color: #ffffff;
+}
+
+body.high-contrast .progress-bar-container {
+    border-color: #ffffff;
+}
+
+body.high-contrast .progress-bar {
+    background: #FFFF00;
+}

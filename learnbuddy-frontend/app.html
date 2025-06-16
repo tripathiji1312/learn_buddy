@@ -11,44 +11,56 @@
 </head>
 
 <body class="app-body">
-    <!-- App Header -->
-    <header class="app-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="app-logo">
-                    <i class="fas fa-robot"></i>
-                    <span>LearnBuddy</span>
-                </div>
-                <div class="user-greeting">
-                    <h2>Welcome back, <span id="username-display">Learner</span>!</h2>
-                    <p>Ready for today's learning adventure?</p>
-                </div>
-            </div>
-            <div class="header-right">
-                <!-- MODIFIED: User stats will be dynamically populated -->
-                <div class="user-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-fire"></i>
-                        <div class="stat-info">
-                            <span class="stat-value" id="streak-count">0</span>
-                            <span class="stat-label">Day Streak</span>
-                        </div>
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="app-logo">
+                        <i class="fas fa-robot"></i>
+                        <span>LearnBuddy</span>
                     </div>
-                    <div class="stat-item">
-                        <i class="fas fa-star"></i>
-                        <div class="stat-info">
-                            <span class="stat-value" id="xp-count">0</span>
-                            <span class="stat-label">XP</span>
+                    <!-- NEW: Accessibility Controls -->
+                    <div class="accessibility-controls">
+                        <div class="control-group">
+                            <label for="high-contrast-toggle" class="sr-only">High Contrast</label>
+                            <i class="fas fa-adjust"></i>
+                            <label class="switch">
+                                <input type="checkbox" id="high-contrast-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="control-group">
+                            <i class="fas fa-text-height"></i>
+                            <button id="decrease-font-btn" class="font-control-btn" aria-label="Decrease font size">A-</button>
+                            <button id="increase-font-btn" class="font-control-btn" aria-label="Increase font size">A+</button>
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-outline" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </button>
+                <div class="header-right">
+                    <!-- User stats section (unchanged) -->
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-fire"></i>
+                            <div class="stat-info">
+                                <span class="stat-value" id="streak-count">0</span>
+                                <span class="stat-label">Day Streak</span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-star"></i>
+                            <div class="stat-info">
+                                <span class="stat-value" id="xp-count">0</span>
+                                <span class="stat-label">XP</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
             </div>
-        </div>
-    </header>
+            </header>
 
     <!-- Main Content -->
     <main class="app-main">
