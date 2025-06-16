@@ -175,19 +175,50 @@ def create_user_learner(user: UserCreate):
 
 @app.post("/token", response_model=Token, summary="User login")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    # ... (code is unchanged)
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Authenticate user (this part is unchanged)
     cur.execute("SELECT * FROM users WHERE username = %s", (form_data.username,))
     user = cur.fetchone()
-    cur.close()
-    conn.close()
     if not user or not security.verify_password(form_data.password, user['password_hash']):
+        cur.close()
+        conn.close()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # --- NEW: Streak Logic ---
+    today = date.today()
+    last_login = user['last_login_date']
+    
+    if last_login is None:
+        # First login ever
+        new_streak = 1
+    elif last_login == today:
+        # Already logged in today, streak doesn't change
+        new_streak = user['streak_count']
+    elif last_login == today - timedelta(days=1):
+        # Logged in yesterday, increment streak
+        new_streak = user['streak_count'] + 1
+    else:
+        # Missed a day, reset streak to 1
+        new_streak = 1
+
+    # Update the user's streak and last login date in the database
+    cur.execute(
+        "UPDATE users SET streak_count = %s, last_login_date = %s WHERE id = %s",
+        (new_streak, today, user['id'])
+    )
+    conn.commit()
+    # --- END OF NEW LOGIC ---
+
+    cur.close()
+    conn.close()
+
+    # Create and return access token (this part is unchanged)
     access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
         data={"sub": user['username']}, expires_delta=access_token_expires
@@ -208,29 +239,145 @@ def get_next_question(req: NextQuestionRequest, current_user: User = Depends(get
 
 @app.post("/submit_answer", summary="Submit an answer (Protected)")
 def submit_answer(submission: AnswerSubmission, current_user: User = Depends(get_current_user)):
-    # ... (code is unchanged)
     logging.info(f"Answer submission from user {current_user.id} for question {submission.question_id}")
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
     try:
+        # Process the answer (this part is mostly unchanged)
         cur.execute("SELECT correct_answer_text FROM questions WHERE id = %s;", (submission.question_id,))
         result = cur.fetchone()
         if not result:
             raise HTTPException(status_code=404, detail="Question ID not found.")
+        
         correct_answer = result['correct_answer_text']
         is_correct, score = check_semantic_similarity(submission.user_answer, correct_answer)
+        
         update_bandit_state(current_user.id, submission.lesson_id, submission.difficulty_answered, is_correct)
+        
         cur.execute(
             "INSERT INTO user_progress (user_id, question_id, is_correct) VALUES (%s, %s, %s);",
             (current_user.id, submission.question_id, is_correct)
         )
-        if is_correct:
-            cur.execute("UPDATE users SET xp = xp + 10 WHERE id = %s;", (current_user.id,))
+        
+        xp_gain = 10 if is_correct else 0
+
+        # --- NEW: Quest Progress Logic ---
+        quest_completed_this_turn = False
+        
+        # Find active, uncompleted quest for today
+        cur.execute("""
+            SELECT uq.id, uq.current_progress, q.quest_type, q.completion_target, q.xp_reward
+            FROM user_quests uq
+            JOIN quests q ON uq.quest_id = q.id
+            WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE AND uq.is_completed = FALSE;
+        """, (current_user.id,))
+        active_quest = cur.fetchone()
+
+        if active_quest:
+            quest_progress_updated = False
+            # Update progress based on quest type
+            if active_quest['quest_type'] == 'TOTAL_ANSWERS':
+                quest_progress_updated = True
+            elif active_quest['quest_type'] == 'CORRECT_ANSWERS' and is_correct:
+                quest_progress_updated = True
+
+            if quest_progress_updated:
+                new_progress = active_quest['current_progress'] + 1
+                cur.execute(
+                    "UPDATE user_quests SET current_progress = %s WHERE id = %s",
+                    (new_progress, active_quest['id'])
+                )
+                
+                # Check if the quest is now complete
+                if new_progress >= active_quest['completion_target']:
+                    cur.execute(
+                        "UPDATE user_quests SET is_completed = TRUE WHERE id = %s",
+                        (active_quest['id'],)
+                    )
+                    xp_gain += active_quest['xp_reward'] # Add quest XP reward
+                    quest_completed_this_turn = True
+                    logging.info(f"User {current_user.id} completed quest! Awarded {active_quest['xp_reward']} XP.")
+
+        # Update user's total XP
+        if xp_gain > 0:
+            cur.execute("UPDATE users SET xp = xp + %s WHERE id = %s;", (xp_gain, current_user.id))
+        # --- END OF NEW LOGIC ---
+
         conn.commit()
-        return {"status": "Answer processed", "is_correct": is_correct, "similarity_score": round(score, 2)}
+        return {
+            "status": "Answer processed", 
+            "is_correct": is_correct, 
+            "similarity_score": round(score, 2),
+            "quest_completed": quest_completed_this_turn # Let frontend know if a quest was just completed
+        }
     finally:
         cur.close()
         conn.close()
+@app.get("/users/me/stats", response_model=UserStatsResponse, summary="Get current user's stats (Protected)", tags=["Learner"])
+def get_user_stats(current_user: User = Depends(get_current_user)):
+    """
+    Returns the current user's XP and streak count.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT xp, streak_count FROM users WHERE id = %s", (current_user.id,))
+    stats = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not stats:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return stats
+
+
+@app.get("/quests/today", response_model=QuestResponse, summary="Get today's quest (Protected)", tags=["Learner"])
+def get_daily_quest(current_user: User = Depends(get_current_user)):
+    """
+    Checks if a user has a quest for today. If not, assigns a random one.
+    Returns the current state of today's quest.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Check for an existing quest for today
+    cur.execute("""
+        SELECT q.title, q.description, uq.current_progress, q.completion_target, q.xp_reward, uq.is_completed
+        FROM user_quests uq
+        JOIN quests q ON uq.quest_id = q.id
+        WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;
+    """, (current_user.id,))
+    quest = cur.fetchone()
+
+    if not quest:
+        # No quest found for today, so assign a new one
+        # Fetch a random quest definition that is NOT time-based for simplicity
+        cur.execute("SELECT id FROM quests WHERE quest_type != 'TIME_BASED' ORDER BY RANDOM() LIMIT 1")
+        random_quest = cur.fetchone()
+        
+        if not random_quest:
+            cur.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="No available quests to assign.")
+            
+        # Assign it to the user
+        cur.execute(
+            "INSERT INTO user_quests (user_id, quest_id) VALUES (%s, %s) RETURNING id;",
+            (current_user.id, random_quest['id'])
+        )
+        conn.commit()
+        
+        # Fetch the newly created quest data to return it
+        cur.execute("""
+            SELECT q.title, q.description, uq.current_progress, q.completion_target, q.xp_reward, uq.is_completed
+            FROM user_quests uq
+            JOIN quests q ON uq.quest_id = q.id
+            WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;
+        """, (current_user.id,))
+        quest = cur.fetchone()
+    
+    cur.close()
+    conn.close()
+    return quest
 
 # ===================================================================
 # ===================== ADMIN PANEL ENDPOINTS =======================
