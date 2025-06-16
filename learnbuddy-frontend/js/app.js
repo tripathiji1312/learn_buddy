@@ -1,79 +1,68 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration & State ---
-    const API_BASE_URL = 'http://127.0.0.1:8000'; // Replace with your actual backend URL
+    const API_BASE_URL = 'http://127.0.0.1:8000';
     const token = localStorage.getItem('accessToken');
     const username = localStorage.getItem('username');
+    let currentQuestion = null;
+    let lessonId = 1;
 
-    let currentQuestion = null; // Will store { question_id, difficulty_level, question_text }
-    let lessonId = 1; // Default lesson
-    
     // --- Element Selections ---
     const usernameDisplay = document.getElementById('username-display');
+    const xpCountEl = document.getElementById('xp-count');
+    const streakCountEl = document.getElementById('streak-count');
     const dashboardView = document.getElementById('dashboard-view');
     const questionView = document.getElementById('question-view');
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
 
-    const startQuestBtn = document.getElementById('start-quest-btn');
+    // Quest Elements
+    const questTitleEl = document.getElementById('quest-title');
+    const questContentEl = document.getElementById('quest-content');
     const nextQuestionBtn = document.getElementById('next-question-btn');
-    const questionContent = document.getElementById('quest-content');
-
+    
+    // Question Elements
     const questionTextEl = document.getElementById('question-text');
     const userAnswerTextarea = document.getElementById('user-answer');
     const submitAnswerBtn = document.getElementById('submit-answer-btn');
-    
     const feedbackContainer = document.getElementById('answer-feedback');
     const feedbackIcon = document.getElementById('feedback-icon').querySelector('i');
     const feedbackTitle = document.getElementById('feedback-title');
     const feedbackMessage = document.getElementById('feedback-message');
     const similarityScoreEl = document.getElementById('similarity-score');
     
+    // Modals & Celebrations
     const errorModal = document.getElementById('error-modal');
     const errorModalText = document.getElementById('error-modal-text');
     const celebrationEl = document.getElementById('celebration');
+    const celebrationTitle = document.getElementById('celebration-title');
+    const celebrationMessage = document.getElementById('celebration-message');
 
     // --- Initial Check ---
     if (!token || !username) {
-        // If no token, redirect to the login page immediately.
         window.location.href = 'auth.html';
-        return; // Stop further execution
+        return;
     }
-    
-    // Personalize the UI
     usernameDisplay.textContent = username;
 
     // --- Core Functions ---
-    
-    /**
-     * Performs an authenticated fetch request to the API.
-     * @param {string} endpoint - The API endpoint to call.
-     * @param {object} options - The options for the fetch call (method, body, etc.).
-     * @returns {Promise<any>} - The JSON response from the API.
-     */
     const apiFetch = async (endpoint, options = {}) => {
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         };
-
         const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-
         if (response.status === 401) {
-            // Token is invalid or expired
             logout();
             return;
         }
-
-        const data = await response.json();
         if (!response.ok) {
+            const data = await response.json();
             throw new Error(data.detail || 'An API error occurred.');
         }
-        return data;
+        // Handle responses with no content (like DELETE)
+        return response.status === 204 ? null : response.json();
     };
-
-    /**
-     * Fetches the next question from the AI.
-     */
+    
     const getNextQuestion = async () => {
         showLoading('Preparing your personalized question...');
         try {
@@ -81,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 body: JSON.stringify({ lesson_id: lessonId })
             });
-
             currentQuestion = data;
             displayQuestion(data);
             switchToView('question');
@@ -92,9 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    /**
-     * Handles the submission of a user's answer.
-     */
     const submitAnswer = async () => {
         const userAnswer = userAnswerTextarea.value.trim();
         if (!userAnswer || !currentQuestion) return;
@@ -102,24 +87,28 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoading('Analyzing your answer...');
         submitAnswerBtn.disabled = true;
 
-        const payload = {
-            lesson_id: lessonId,
-            question_id: currentQuestion.question_id,
-            difficulty_answered: currentQuestion.difficulty_level,
-            user_answer: userAnswer,
-        };
-
         try {
             const result = await apiFetch('/submit_answer', {
                 method: 'POST',
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    lesson_id: lessonId,
+                    question_id: currentQuestion.question_id,
+                    difficulty_answered: currentQuestion.difficulty_level,
+                    user_answer: userAnswer,
+                })
             });
             displayFeedback(result);
 
-            // If correct, show celebration
             if (result.is_correct) {
-                showCelebration();
+                const xpGain = result.quest_completed ? 10 + ' (+Quest Bonus!)' : '+10';
+                showCelebration('Correct!', `You earned ${xpGain} XP!`);
             }
+            if(result.quest_completed) {
+                // Give a bigger celebration for completing a quest
+                setTimeout(() => showCelebration('Quest Complete!', `Awesome work!`), 1000);
+            }
+            // Refresh stats and quest info after every answer
+            loadInitialData();
         } catch (error) {
             showError(error.message);
             submitAnswerBtn.disabled = false;
@@ -129,20 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- UI Update Functions ---
-    
-    /**
-     * Switches between the 'dashboard' and 'question' views.
-     * @param {'dashboard' | 'question'} viewName - The name of the view to switch to.
-     */
     const switchToView = (viewName) => {
-        dashboardView.classList.remove('active');
-        questionView.classList.remove('active');
-
-        if (viewName === 'dashboard') {
-            dashboardView.classList.add('active');
-        } else {
-            questionView.classList.add('active');
-        }
+        dashboardView.classList.toggle('active', viewName === 'dashboard');
+        questionView.classList.toggle('active', viewName === 'question');
     };
 
     const displayQuestion = (questionData) => {
@@ -154,79 +132,93 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const displayFeedback = (result) => {
         feedbackContainer.classList.remove('hidden', 'correct', 'incorrect');
-        feedbackIcon.classList.remove('fa-check-circle', 'fa-times-circle');
-        
-        if (result.is_correct) {
-            feedbackContainer.classList.add('correct');
-            feedbackIcon.classList.add('fa-check-circle');
-            feedbackTitle.textContent = 'Great job!';
-            feedbackMessage.textContent = "That's correct! You're doing amazing.";
-        } else {
-            feedbackContainer.classList.add('incorrect');
-            feedbackIcon.classList.add('fa-times-circle');
-            feedbackTitle.textContent = 'Not quite';
-            feedbackMessage.textContent = "That wasn't the answer we were looking for, but keep trying!";
-        }
-        
+        feedbackIcon.className = result.is_correct ? 'fas fa-check-circle' : 'fas fa-times-circle';
+        feedbackContainer.classList.add(result.is_correct ? 'correct' : 'incorrect');
+        feedbackTitle.textContent = result.is_correct ? 'Great job!' : 'Not quite';
+        feedbackMessage.textContent = result.is_correct ? "That's the right idea!" : "That wasn't the answer we were looking for, but keep trying!";
         similarityScoreEl.textContent = `${Math.round(result.similarity_score * 100)}%`;
     };
-    
+
+    const updateStatsUI = (stats) => {
+        xpCountEl.textContent = stats.xp;
+        streakCountEl.textContent = stats.streak_count;
+    };
+
+    const updateQuestUI = (quest) => {
+        questTitleEl.textContent = quest.title;
+        if (quest.is_completed) {
+            questContentEl.innerHTML = `
+                <div class="quest-placeholder">
+                    <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                    <h4>Quest Complete!</h4>
+                    <p>Great job! Come back tomorrow for a new quest.</p>
+                </div>`;
+            nextQuestionBtn.disabled = true;
+            nextQuestionBtn.textContent = 'Quest Done for Today';
+        } else {
+            const progressPercent = (quest.current_progress / quest.completion_target) * 100;
+            questContentEl.innerHTML = `
+                <p class="quest-description">${quest.description}</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${progressPercent}%"></div>
+                </div>
+                <p class="quest-progress">${quest.current_progress} / ${quest.completion_target}</p>
+            `;
+            nextQuestionBtn.disabled = false;
+        }
+    };
+
     const showLoading = (message) => {
         loadingText.textContent = message;
         loadingOverlay.classList.remove('hidden');
     };
 
-    const hideLoading = () => {
-        loadingOverlay.classList.add('hidden');
-    };
+    const hideLoading = () => loadingOverlay.classList.add('hidden');
 
     const showError = (message) => {
         errorModalText.textContent = message;
         errorModal.classList.remove('hidden');
     };
 
-    window.closeErrorModal = () => {
-        errorModal.classList.add('hidden');
-    };
-    
-    const showCelebration = () => {
+    const showCelebration = (title, message) => {
+        celebrationTitle.textContent = title;
+        celebrationMessage.innerHTML = message;
         celebrationEl.classList.remove('hidden');
-        setTimeout(() => {
-            celebrationEl.classList.add('hidden');
-        }, 2000); // Animation lasts 2 seconds
-    };
-    
-    // --- UI Event Handlers (exposed to global scope) ---
-    
-    window.startQuest = () => {
-        startQuestBtn.classList.add('hidden');
-        nextQuestionBtn.classList.remove('hidden');
-        questionContent.innerHTML = `<p>Your quest is active! Click "Next Question" to begin.</p>`;
-        getNextQuestion();
+        setTimeout(() => celebrationEl.classList.add('hidden'), 2500);
     };
 
+    // --- Global Functions & Initial Load ---
+    window.closeErrorModal = () => errorModal.classList.add('hidden');
     window.getNextQuestion = getNextQuestion;
-
     window.submitAnswer = submitAnswer;
-    
     window.continueToNext = () => {
         feedbackContainer.classList.add('hidden');
         getNextQuestion();
     };
-    
-    window.skipQuestion = () => {
-        // A simple skip just gets the next question
-        getNextQuestion();
-    };
-
+    window.skipQuestion = getNextQuestion;
     window.backToDashboard = () => {
+        loadInitialData(); // Refresh data when coming back to dashboard
         switchToView('dashboard');
     };
-
     window.logout = () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('username');
         window.location.href = 'index.html';
     };
 
+    const loadInitialData = async () => {
+        try {
+            const [stats, quest] = await Promise.all([
+                apiFetch('/users/me/stats'),
+                apiFetch('/quests/today')
+            ]);
+            updateStatsUI(stats);
+            updateQuestUI(quest);
+        } catch (error) {
+            showError(`Failed to load dashboard data: ${error.message}`);
+        }
+    };
+
+    // Load all data when the page loads
+    loadInitialData();
 });

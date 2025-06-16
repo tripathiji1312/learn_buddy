@@ -327,7 +327,9 @@ def get_user_stats(current_user: User = Depends(get_current_user)):
     conn.close()
     if not stats:
         raise HTTPException(status_code=404, detail="User not found.")
-    return stats
+    
+    # MODIFIED: Explicitly create the response model instance.
+    return UserStatsResponse(xp=stats['xp'], streak_count=stats['streak_count'])
 
 
 @app.get("/quests/today", response_model=QuestResponse, summary="Get today's quest (Protected)", tags=["Learner"])
@@ -346,11 +348,10 @@ def get_daily_quest(current_user: User = Depends(get_current_user)):
         JOIN quests q ON uq.quest_id = q.id
         WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;
     """, (current_user.id,))
-    quest = cur.fetchone()
+    quest_data = cur.fetchone()
 
-    if not quest:
+    if not quest_data:
         # No quest found for today, so assign a new one
-        # Fetch a random quest definition that is NOT time-based for simplicity
         cur.execute("SELECT id FROM quests WHERE quest_type != 'TIME_BASED' ORDER BY RANDOM() LIMIT 1")
         random_quest = cur.fetchone()
         
@@ -359,26 +360,33 @@ def get_daily_quest(current_user: User = Depends(get_current_user)):
             conn.close()
             raise HTTPException(status_code=404, detail="No available quests to assign.")
             
-        # Assign it to the user
         cur.execute(
             "INSERT INTO user_quests (user_id, quest_id) VALUES (%s, %s) RETURNING id;",
             (current_user.id, random_quest['id'])
         )
         conn.commit()
         
-        # Fetch the newly created quest data to return it
         cur.execute("""
             SELECT q.title, q.description, uq.current_progress, q.completion_target, q.xp_reward, uq.is_completed
             FROM user_quests uq
             JOIN quests q ON uq.quest_id = q.id
             WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;
         """, (current_user.id,))
-        quest = cur.fetchone()
+        quest_data = cur.fetchone()
     
     cur.close()
     conn.close()
-    return quest
 
+    # MODIFIED: Explicitly create the QuestResponse object before returning.
+    # This ensures the response matches the Pydantic model perfectly.
+    return QuestResponse(
+        title=quest_data['title'],
+        description=quest_data['description'],
+        current_progress=quest_data['current_progress'],
+        completion_target=quest_data['completion_target'],
+        xp_reward=quest_data['xp_reward'],
+        is_completed=quest_data['is_completed']
+    )
 # ===================================================================
 # ===================== ADMIN PANEL ENDPOINTS =======================
 # ===================================================================

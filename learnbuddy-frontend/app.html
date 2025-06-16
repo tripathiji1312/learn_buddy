@@ -25,6 +25,7 @@
                 </div>
             </div>
             <div class="header-right">
+                <!-- MODIFIED: User stats will be dynamically populated -->
                 <div class="user-stats">
                     <div class="stat-item">
                         <i class="fas fa-fire"></i>
@@ -54,35 +55,28 @@
         <!-- Dashboard View -->
         <div id="dashboard-view" class="view active">
             <div class="dashboard-grid">
-                <!-- Current Quest Card -->
+                <!-- MODIFIED: Quest card is now dynamic -->
                 <div class="quest-card">
                     <div class="quest-header">
-                        <h3>Today's Quest</h3>
-                        <div class="quest-difficulty" id="quest-difficulty">
-                            <i class="fas fa-star"></i>
-                            <span>Level 1</span>
-                        </div>
+                        <h3 id="quest-title">Today's Quest</h3>
                     </div>
                     <div class="quest-content" id="quest-content">
+                        <!-- Content will be injected by JS -->
                         <div class="quest-placeholder">
-                            <i class="fas fa-play-circle"></i>
-                            <h4>Start Your Learning Journey</h4>
-                            <p>Click the button below to get your first question and begin earning XP!</p>
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <h4>Loading your quest...</h4>
                         </div>
                     </div>
                     <div class="quest-actions">
-                        <button id="start-quest-btn" class="btn btn-primary" onclick="startQuest()">
-                            <i class="fas fa-rocket"></i>
-                            Start Quest
-                        </button>
-                        <button id="next-question-btn" class="btn btn-primary hidden" onclick="getNextQuestion()">
+                        <!-- MODIFIED: Buttons are simplified -->
+                        <button id="next-question-btn" class="btn btn-primary" onclick="getNextQuestion()">
                             <i class="fas fa-arrow-right"></i>
-                            Next Question
+                            Continue Quest
                         </button>
                     </div>
                 </div>
 
-                <!-- Progress Card -->
+                <!-- Progress Card (No Changes) -->
                 <div class="progress-card">
                     <h3>Your Progress</h3>
                     <div class="progress-ring-container">
@@ -109,7 +103,7 @@
                     </div>
                 </div>
 
-                <!-- Achievements Card -->
+                <!-- Achievements Card (No Changes) -->
                 <div class="achievements-card">
                     <h3>Recent Achievements</h3>
                     <div class="achievements-list" id="achievements-list">
@@ -122,7 +116,7 @@
             </div>
         </div>
 
-        <!-- Question View -->
+        <!-- Question View (No Changes to this section) -->
         <div id="question-view" class="view">
             <div class="question-container">
                 <div class="question-header">
@@ -162,7 +156,6 @@
                         </div>
                     </div>
 
-                    <!-- Answer Feedback -->
                     <div id="answer-feedback" class="answer-feedback hidden">
                         <div class="feedback-content">
                             <div class="feedback-icon" id="feedback-icon">
@@ -187,7 +180,7 @@
         </div>
     </main>
 
-    <!-- Loading Overlay -->
+    <!-- Overlays and Modals (No Changes) -->
     <div id="loading-overlay" class="loading-overlay hidden">
         <div class="loading-content">
             <div class="loading-spinner">
@@ -196,8 +189,6 @@
             <p id="loading-text">Preparing your personalized question...</p>
         </div>
     </div>
-
-    <!-- Error Modal -->
     <div id="error-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -216,13 +207,11 @@
             </div>
         </div>
     </div>
-
-    <!-- Celebration Animation -->
     <div id="celebration" class="celebration hidden">
         <div class="confetti"></div>
         <div class="celebration-text">
-            <h2>Awesome!</h2>
-            <p>You earned <span id="xp-earned">+10</span> XP!</p>
+            <h2 id="celebration-title">Awesome!</h2>
+            <p id="celebration-message">You earned <span id="xp-earned">+10</span> XP!</p>
         </div>
     </div>
 

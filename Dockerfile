@@ -28,4 +28,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Tell Docker what command to run when the container starts.
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
