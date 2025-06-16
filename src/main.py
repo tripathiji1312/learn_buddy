@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
 import psycopg2.extras
-from datetime import timedelta
+from datetime import timedelta, date # MODIFIED: Add 'date'
+import random # NEW: Add 'random'
 from jose import jwt, JWTError
 from typing import List, Optional
 
@@ -38,7 +39,6 @@ app.add_middleware(
 
 # --- Pydantic Models for API Data ---
 
-# User Models
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
@@ -47,12 +47,12 @@ class UserCreate(BaseModel):
 class UserInDB(User):
     is_admin: bool = False
 
-# Token Model
+# Token Model (No Changes Here)
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-# Learning Models
+# Learning Models (No Changes Here)
 class NextQuestionRequest(BaseModel):
     lesson_id: int
 
@@ -61,6 +61,19 @@ class AnswerSubmission(BaseModel):
     question_id: int
     difficulty_answered: int
     user_answer: str
+
+# --- NEW: Gamification Models ---
+class QuestResponse(BaseModel):
+    title: str
+    description: str
+    current_progress: int
+    completion_target: int
+    xp_reward: int
+    is_completed: bool
+
+class UserStatsResponse(BaseModel):
+    xp: int
+    streak_count: int   
 
 # --- NEW Admin Panel User Management Models ---
 class UserAdminCreate(BaseModel):
