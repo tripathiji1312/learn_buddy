@@ -4,8 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
 import psycopg2.extras
-from datetime import timedelta, date # MODIFIED: Add 'date'
-import random # NEW: Add 'random'
+from datetime import timedelta, date, datetime
+import random
 from jose import jwt, JWTError
 from typing import List, Optional
 
@@ -39,6 +39,7 @@ app.add_middleware(
 
 # --- Pydantic Models for API Data ---
 
+# User Models
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
@@ -47,12 +48,12 @@ class UserCreate(BaseModel):
 class UserInDB(User):
     is_admin: bool = False
 
-# Token Model (No Changes Here)
+# Token Model
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-# Learning Models (No Changes Here)
+# Learning Models
 class NextQuestionRequest(BaseModel):
     lesson_id: int
 
@@ -62,7 +63,7 @@ class AnswerSubmission(BaseModel):
     difficulty_answered: int
     user_answer: str
 
-# --- NEW: Gamification Models ---
+# Gamification Models
 class QuestResponse(BaseModel):
     title: str
     description: str
@@ -73,9 +74,15 @@ class QuestResponse(BaseModel):
 
 class UserStatsResponse(BaseModel):
     xp: int
-    streak_count: int   
+    streak_count: int
 
-# --- NEW Admin Panel User Management Models ---
+class AchievementResponse(BaseModel):
+    name: str
+    description: str
+    icon_class: str
+    unlocked_at: datetime
+
+# Admin Panel User Management Models
 class UserAdminCreate(BaseModel):
     username: str
     email: EmailStr
@@ -88,7 +95,7 @@ class UserAdminUpdate(BaseModel):
     email: EmailStr
     xp: int
     is_admin: bool
-    password: Optional[str] = Field(None, min_length=8) # Optional: only update if provided
+    password: Optional[str] = Field(None, min_length=8)
 
 class UserAdminResponse(BaseModel):
     id: int
@@ -117,51 +124,84 @@ class AdminStats(BaseModel):
     questions_by_difficulty: dict
 
 
-# --- Security & Dependencies (No Changes) ---
+# --- Achievement Helper Function ---
+def check_and_award_achievements(user_id: int, conn, cur):
+    """
+    Checks user stats against unearned achievements and awards them if criteria are met.
+    """
+    cur.execute("""
+        SELECT id, name, criteria_type, criteria_value, xp_reward FROM achievements
+        WHERE id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = %s)
+    """, (user_id,))
+    unearned_achievements = cur.fetchall()
+
+    if not unearned_achievements:
+        return
+
+    cur.execute("SELECT streak_count FROM users WHERE id = %s", (user_id,))
+    user_stats = cur.fetchone()
+    
+    cur.execute("SELECT COUNT(*) FROM user_progress WHERE user_id = %s", (user_id,))
+    total_answers = cur.fetchone()['count']
+    
+    cur.execute("SELECT COUNT(*) FROM user_progress WHERE user_id = %s AND is_correct = TRUE", (user_id,))
+    total_correct_answers = cur.fetchone()['count']
+
+    xp_to_add = 0
+    for achievement in unearned_achievements:
+        unlocked = False
+        if achievement['criteria_type'] == 'STREAK' and user_stats['streak_count'] >= achievement['criteria_value']:
+            unlocked = True
+        elif achievement['criteria_type'] == 'ANSWERS_TOTAL' and total_answers >= achievement['criteria_value']:
+            unlocked = True
+        elif achievement['criteria_type'] == 'CORRECT_ANSWERS_TOTAL' and total_correct_answers >= achievement['criteria_value']:
+            unlocked = True
+        
+        if unlocked:
+            cur.execute(
+                "INSERT INTO user_achievements (user_id, achievement_id) VALUES (%s, %s)",
+                (user_id, achievement['id'])
+            )
+            xp_to_add += achievement['xp_reward']
+            logging.info(f"User {user_id} unlocked achievement '{achievement['name']}'!")
+    
+    if xp_to_add > 0:
+        cur.execute("UPDATE users SET xp = xp + %s WHERE id = %s", (xp_to_add, user_id))
+
+
+# --- Security & Dependencies ---
 def get_current_user(token: str = Depends(security.oauth2_scheme)) -> User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
     try:
         payload = jwt.decode(token, security.SECRET_KEY, algorithms=[security.ALGORITHM])
         username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-
+        if username is None: raise credentials_exception
+    except JWTError: raise credentials_exception
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT id, username, email, xp, is_admin FROM users WHERE username = %s", (username,))
     user_data = cur.fetchone()
     cur.close()
     conn.close()
-
-    if user_data is None:
-        raise credentials_exception
-
-    user = UserInDB.model_validate(dict(user_data))
-    return user
+    
+    if user_data is None: raise credentials_exception
+    return UserInDB.model_validate(dict(user_data))
 
 def get_current_admin_user(current_user: UserInDB = Depends(get_current_user)) -> UserInDB:
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Administrator access required.")
     return current_user
 
-# --- Learner Endpoints (No Changes) ---
+
+# --- Learner Endpoints ---
 @app.post("/signup", summary="Create a new user", status_code=status.HTTP_201_CREATED)
 def create_user_learner(user: UserCreate):
-    # ... (code is unchanged)
     hashed_password = security.get_password_hash(user.password)
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute(
-            "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s) RETURNING id;",
-            (user.username, user.email, hashed_password)
-        )
+        cur.execute("INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s) RETURNING id;", (user.username, user.email, hashed_password))
         new_user_id = cur.fetchone()[0]
         conn.commit()
     except psycopg2.IntegrityError:
@@ -172,228 +212,149 @@ def create_user_learner(user: UserCreate):
         conn.close()
     return {"id": new_user_id, "username": user.username, "email": user.email}
 
-
 @app.post("/token", response_model=Token, summary="User login")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    
-    # Authenticate user (this part is unchanged)
     cur.execute("SELECT * FROM users WHERE username = %s", (form_data.username,))
     user = cur.fetchone()
+    
     if not user or not security.verify_password(form_data.password, user['password_hash']):
         cur.close()
         conn.close()
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
     
-    # --- NEW: Streak Logic ---
     today = date.today()
     last_login = user['last_login_date']
-    
+    new_streak = user['streak_count']
     if last_login is None:
-        # First login ever
         new_streak = 1
-    elif last_login == today:
-        # Already logged in today, streak doesn't change
-        new_streak = user['streak_count']
-    elif last_login == today - timedelta(days=1):
-        # Logged in yesterday, increment streak
-        new_streak = user['streak_count'] + 1
-    else:
-        # Missed a day, reset streak to 1
-        new_streak = 1
-
-    # Update the user's streak and last login date in the database
-    cur.execute(
-        "UPDATE users SET streak_count = %s, last_login_date = %s WHERE id = %s",
-        (new_streak, today, user['id'])
-    )
+    elif last_login < today:
+        if last_login == today - timedelta(days=1): new_streak += 1
+        else: new_streak = 1
+    
+    cur.execute("UPDATE users SET streak_count = %s, last_login_date = %s WHERE id = %s", (new_streak, today, user['id']))
+    
+    check_and_award_achievements(user['id'], conn, cur)
     conn.commit()
-    # --- END OF NEW LOGIC ---
-
+    
     cur.close()
     conn.close()
 
-    # Create and return access token (this part is unchanged)
     access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(
-        data={"sub": user['username']}, expires_delta=access_token_expires
-    )
+    access_token = security.create_access_token(data={"sub": user['username']}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-@app.post("/next_question", summary="Get the next AI-selected question (Protected)")
+@app.post("/next_question", summary="Get the next AI-selected question (Protected)", tags=["Learner"])
 def get_next_question(req: NextQuestionRequest, current_user: User = Depends(get_current_user)):
-    # ... (code is unchanged)
-    logging.info(f"Request for next question for user {current_user.id}, lesson {req.lesson_id}")
     optimal_difficulty = select_difficulty_epsilon_greedy(current_user.id, req.lesson_id)
     question_id, question_text = select_question(optimal_difficulty, req.lesson_id)
-    if question_id is None:
-        raise HTTPException(status_code=404, detail="No questions found for this difficulty.")
+    if question_id is None: raise HTTPException(status_code=404, detail="No questions found for this difficulty.")
     return {"difficulty_level": optimal_difficulty, "question_id": question_id, "question_text": question_text}
 
-
-@app.post("/submit_answer", summary="Submit an answer (Protected)")
+@app.post("/submit_answer", summary="Submit an answer (Protected)", tags=["Learner"])
 def submit_answer(submission: AnswerSubmission, current_user: User = Depends(get_current_user)):
-    logging.info(f"Answer submission from user {current_user.id} for question {submission.question_id}")
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    
     try:
-        # Process the answer (this part is mostly unchanged)
         cur.execute("SELECT correct_answer_text FROM questions WHERE id = %s;", (submission.question_id,))
         result = cur.fetchone()
-        if not result:
-            raise HTTPException(status_code=404, detail="Question ID not found.")
+        if not result: raise HTTPException(status_code=404, detail="Question ID not found.")
         
         correct_answer = result['correct_answer_text']
         is_correct, score = check_semantic_similarity(submission.user_answer, correct_answer)
         
         update_bandit_state(current_user.id, submission.lesson_id, submission.difficulty_answered, is_correct)
-        
-        cur.execute(
-            "INSERT INTO user_progress (user_id, question_id, is_correct) VALUES (%s, %s, %s);",
-            (current_user.id, submission.question_id, is_correct)
-        )
+        cur.execute("INSERT INTO user_progress (user_id, question_id, is_correct) VALUES (%s, %s, %s);", (current_user.id, submission.question_id, is_correct))
         
         xp_gain = 10 if is_correct else 0
-
-        # --- NEW: Quest Progress Logic ---
         quest_completed_this_turn = False
         
-        # Find active, uncompleted quest for today
-        cur.execute("""
-            SELECT uq.id, uq.current_progress, q.quest_type, q.completion_target, q.xp_reward
-            FROM user_quests uq
-            JOIN quests q ON uq.quest_id = q.id
-            WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE AND uq.is_completed = FALSE;
-        """, (current_user.id,))
+        cur.execute("SELECT uq.id, uq.current_progress, q.quest_type, q.completion_target, q.xp_reward FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE AND uq.is_completed = FALSE;", (current_user.id,))
         active_quest = cur.fetchone()
-
         if active_quest:
-            quest_progress_updated = False
-            # Update progress based on quest type
-            if active_quest['quest_type'] == 'TOTAL_ANSWERS':
-                quest_progress_updated = True
-            elif active_quest['quest_type'] == 'CORRECT_ANSWERS' and is_correct:
-                quest_progress_updated = True
-
+            quest_progress_updated = (active_quest['quest_type'] == 'TOTAL_ANSWERS') or (active_quest['quest_type'] == 'CORRECT_ANSWERS' and is_correct)
             if quest_progress_updated:
                 new_progress = active_quest['current_progress'] + 1
-                cur.execute(
-                    "UPDATE user_quests SET current_progress = %s WHERE id = %s",
-                    (new_progress, active_quest['id'])
-                )
-                
-                # Check if the quest is now complete
+                cur.execute("UPDATE user_quests SET current_progress = %s WHERE id = %s", (new_progress, active_quest['id']))
                 if new_progress >= active_quest['completion_target']:
-                    cur.execute(
-                        "UPDATE user_quests SET is_completed = TRUE WHERE id = %s",
-                        (active_quest['id'],)
-                    )
-                    xp_gain += active_quest['xp_reward'] # Add quest XP reward
+                    cur.execute("UPDATE user_quests SET is_completed = TRUE WHERE id = %s", (active_quest['id'],))
+                    xp_gain += active_quest['xp_reward']
                     quest_completed_this_turn = True
-                    logging.info(f"User {current_user.id} completed quest! Awarded {active_quest['xp_reward']} XP.")
-
-        # Update user's total XP
-        if xp_gain > 0:
-            cur.execute("UPDATE users SET xp = xp + %s WHERE id = %s;", (xp_gain, current_user.id))
-        # --- END OF NEW LOGIC ---
-
+        
+        if xp_gain > 0: cur.execute("UPDATE users SET xp = xp + %s WHERE id = %s;", (xp_gain, current_user.id))
+        
+        check_and_award_achievements(current_user.id, conn, cur)
         conn.commit()
-        return {
-            "status": "Answer processed", 
-            "is_correct": is_correct, 
-            "similarity_score": round(score, 2),
-            "quest_completed": quest_completed_this_turn # Let frontend know if a quest was just completed
-        }
+
+        return {"status": "Answer processed", "is_correct": is_correct, "similarity_score": round(score, 2), "quest_completed": quest_completed_this_turn}
     finally:
         cur.close()
         conn.close()
+
 @app.get("/users/me/stats", response_model=UserStatsResponse, summary="Get current user's stats (Protected)", tags=["Learner"])
 def get_user_stats(current_user: User = Depends(get_current_user)):
-    """
-    Returns the current user's XP and streak count.
-    """
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT xp, streak_count FROM users WHERE id = %s", (current_user.id,))
     stats = cur.fetchone()
     cur.close()
     conn.close()
-    if not stats:
-        raise HTTPException(status_code=404, detail="User not found.")
-    
-    # MODIFIED: Explicitly create the response model instance.
+    if not stats: raise HTTPException(status_code=404, detail="User not found.")
     return UserStatsResponse(xp=stats['xp'], streak_count=stats['streak_count'])
-
 
 @app.get("/quests/today", response_model=QuestResponse, summary="Get today's quest (Protected)", tags=["Learner"])
 def get_daily_quest(current_user: User = Depends(get_current_user)):
-    """
-    Checks if a user has a quest for today. If not, assigns a random one.
-    Returns the current state of today's quest.
-    """
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    
-    # Check for an existing quest for today
-    cur.execute("""
-        SELECT q.title, q.description, uq.current_progress, q.completion_target, q.xp_reward, uq.is_completed
-        FROM user_quests uq
-        JOIN quests q ON uq.quest_id = q.id
-        WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;
-    """, (current_user.id,))
+    cur.execute("SELECT q.title, q.description, uq.current_progress, q.completion_target, q.xp_reward, uq.is_completed FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;", (current_user.id,))
     quest_data = cur.fetchone()
-
     if not quest_data:
-        # No quest found for today, so assign a new one
         cur.execute("SELECT id FROM quests WHERE quest_type != 'TIME_BASED' ORDER BY RANDOM() LIMIT 1")
         random_quest = cur.fetchone()
-        
         if not random_quest:
             cur.close()
             conn.close()
             raise HTTPException(status_code=404, detail="No available quests to assign.")
-            
-        cur.execute(
-            "INSERT INTO user_quests (user_id, quest_id) VALUES (%s, %s) RETURNING id;",
-            (current_user.id, random_quest['id'])
-        )
+        cur.execute("INSERT INTO user_quests (user_id, quest_id) VALUES (%s, %s) RETURNING id;", (current_user.id, random_quest['id']))
         conn.commit()
-        
-        cur.execute("""
-            SELECT q.title, q.description, uq.current_progress, q.completion_target, q.xp_reward, uq.is_completed
-            FROM user_quests uq
-            JOIN quests q ON uq.quest_id = q.id
-            WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;
-        """, (current_user.id,))
+        cur.execute("SELECT q.title, q.description, uq.current_progress, q.completion_target, q.xp_reward, uq.is_completed FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = %s AND uq.assigned_date = CURRENT_DATE;", (current_user.id,))
         quest_data = cur.fetchone()
-    
     cur.close()
     conn.close()
+    return QuestResponse(**quest_data)
 
-    # MODIFIED: Explicitly create the QuestResponse object before returning.
-    # This ensures the response matches the Pydantic model perfectly.
-    return QuestResponse(
-        title=quest_data['title'],
-        description=quest_data['description'],
-        current_progress=quest_data['current_progress'],
-        completion_target=quest_data['completion_target'],
-        xp_reward=quest_data['xp_reward'],
-        is_completed=quest_data['is_completed']
-    )
+# Replace the old get_user_achievements function with this one
+
+@app.get("/achievements", response_model=List[AchievementResponse], summary="Get user's unlocked achievements", tags=["Learner"])
+def get_user_achievements(current_user: User = Depends(get_current_user)):
+    """
+    Returns a list of all achievements the current user has unlocked.
+    """
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("""
+        SELECT a.name, a.description, a.icon_class, ua.unlocked_at
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = %s
+        ORDER BY ua.unlocked_at DESC;
+    """, (current_user.id,))
+    achievements_data = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    # THE FIX: Manually create a list of AchievementResponse objects.
+    # This ensures the data perfectly matches the response model.
+    return [AchievementResponse(**ach) for ach in achievements_data]
+
+
 # ===================================================================
 # ===================== ADMIN PANEL ENDPOINTS =======================
 # ===================================================================
 
 @app.post("/admin/token", response_model=Token, summary="Admin user login", tags=["Admin"])
 def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
-    # ... (code is unchanged)
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT * FROM users WHERE username = %s", (form_data.username,))
@@ -401,20 +362,13 @@ def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
     cur.close()
     conn.close()
     if not user or not user['is_admin'] or not security.verify_password(form_data.password, user['password_hash']):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password, or not an admin.",
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password, or not an admin.")
     access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(
-        data={"sub": user['username']}, expires_delta=access_token_expires
-    )
+    access_token = security.create_access_token(data={"sub": user['username']}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
-
 
 @app.get("/admin/stats", response_model=AdminStats, summary="Get dashboard statistics", tags=["Admin"])
 def get_admin_stats(admin: UserInDB = Depends(get_current_admin_user)):
-    # ... (code is unchanged)
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT count(*) FROM users;")
@@ -428,8 +382,6 @@ def get_admin_stats(admin: UserInDB = Depends(get_current_admin_user)):
     cur.close()
     conn.close()
     return {"total_users": total_users, "total_questions": total_questions, "total_answers_submitted": total_answers, "questions_by_difficulty": difficulty_counts}
-
-# --- UPDATED & NEW USER MANAGEMENT ENDPOINTS ---
 
 @app.get("/admin/users", response_model=List[UserAdminResponse], summary="Get all users", tags=["Admin"])
 def get_all_users(admin: UserInDB = Depends(get_current_admin_user)):
@@ -449,8 +401,7 @@ def get_user_by_id(user_id: int, admin: UserInDB = Depends(get_current_admin_use
     user = cur.fetchone()
     cur.close()
     conn.close()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
+    if not user: raise HTTPException(status_code=404, detail="User not found.")
     return UserAdminResponse.model_validate(dict(user))
 
 @app.post("/admin/users", response_model=UserAdminResponse, status_code=status.HTTP_201_CREATED, summary="Create a new user as Admin", tags=["Admin"])
@@ -459,10 +410,7 @@ def create_user_admin(user: UserAdminCreate, admin: UserInDB = Depends(get_curre
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     try:
-        cur.execute(
-            "INSERT INTO users (username, email, password_hash, xp, is_admin) VALUES (%s, %s, %s, %s, %s) RETURNING id;",
-            (user.username, user.email, hashed_password, user.xp, user.is_admin)
-        )
+        cur.execute("INSERT INTO users (username, email, password_hash, xp, is_admin) VALUES (%s, %s, %s, %s, %s) RETURNING id;", (user.username, user.email, hashed_password, user.xp, user.is_admin))
         new_user_id = cur.fetchone()['id']
         conn.commit()
     except psycopg2.IntegrityError:
@@ -473,38 +421,22 @@ def create_user_admin(user: UserAdminCreate, admin: UserInDB = Depends(get_curre
         conn.close()
     return UserAdminResponse(id=new_user_id, **user.model_dump())
 
-
 @app.put("/admin/users/{user_id}", response_model=UserAdminResponse, summary="Update a user as Admin", tags=["Admin"])
 def update_user_admin(user_id: int, user_update: UserAdminUpdate, admin: UserInDB = Depends(get_current_admin_user)):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
     if user_update.password:
-        # If a new password is provided, hash it and update it
         hashed_password = security.get_password_hash(user_update.password)
-        cur.execute(
-            """
-            UPDATE users SET username=%s, email=%s, xp=%s, is_admin=%s, password_hash=%s
-            WHERE id=%s RETURNING id;
-            """,
-            (user_update.username, user_update.email, user_update.xp, user_update.is_admin, hashed_password, user_id)
-        )
+        cur.execute("UPDATE users SET username=%s, email=%s, xp=%s, is_admin=%s, password_hash=%s WHERE id=%s RETURNING id;", (user_update.username, user_update.email, user_update.xp, user_update.is_admin, hashed_password, user_id))
     else:
-        # If no password is provided, update everything else
-        cur.execute(
-            "UPDATE users SET username=%s, email=%s, xp=%s, is_admin=%s WHERE id=%s RETURNING id;",
-            (user_update.username, user_update.email, user_update.xp, user_update.is_admin, user_id)
-        )
+        cur.execute("UPDATE users SET username=%s, email=%s, xp=%s, is_admin=%s WHERE id=%s RETURNING id;", (user_update.username, user_update.email, user_update.xp, user_update.is_admin, user_id))
     
     updated_user = cur.fetchone()
-    if updated_user is None:
-        raise HTTPException(status_code=404, detail="User not found.")
-    
+    if updated_user is None: raise HTTPException(status_code=404, detail="User not found.")
     conn.commit()
     cur.close()
     conn.close()
     return UserAdminResponse(id=user_id, **user_update.model_dump())
-
 
 @app.delete("/admin/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a user", tags=["Admin"])
 def delete_user(user_id: int, admin: UserInDB = Depends(get_current_admin_user)):
@@ -513,18 +445,14 @@ def delete_user(user_id: int, admin: UserInDB = Depends(get_current_admin_user))
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM users WHERE id = %s RETURNING id;", (user_id,))
-    if cur.fetchone() is None:
-        raise HTTPException(status_code=404, detail="User not found.")
+    if cur.fetchone() is None: raise HTTPException(status_code=404, detail="User not found.")
     conn.commit()
     cur.close()
     conn.close()
     return
 
-# --- Question Management Endpoints (No changes, just for completeness) ---
-
 @app.get("/admin/questions", response_model=List[QuestionAdmin], summary="Get all questions", tags=["Admin"])
 def get_all_questions(admin: UserInDB = Depends(get_current_admin_user)):
-    # ... (code is unchanged)
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT id, lesson_id, content as question_text, difficulty_level FROM questions ORDER BY id DESC;")
@@ -535,13 +463,9 @@ def get_all_questions(admin: UserInDB = Depends(get_current_admin_user)):
 
 @app.post("/admin/questions", response_model=QuestionAdmin, status_code=status.HTTP_201_CREATED, summary="Create a new question", tags=["Admin"])
 def create_question(question: QuestionCreateUpdate, admin: UserInDB = Depends(get_current_admin_user)):
-    # ... (code is unchanged)
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute(
-        "INSERT INTO questions (lesson_id, content, difficulty_level, correct_answer_text) VALUES (%s, %s, %s, %s) RETURNING id;",
-        (question.lesson_id, question.question_text, question.difficulty_level, question.correct_answer_text)
-    )
+    cur.execute("INSERT INTO questions (lesson_id, content, difficulty_level, correct_answer_text) VALUES (%s, %s, %s, %s) RETURNING id;", (question.lesson_id, question.question_text, question.difficulty_level, question.correct_answer_text))
     new_id = cur.fetchone()['id']
     conn.commit()
     cur.close()
@@ -550,15 +474,10 @@ def create_question(question: QuestionCreateUpdate, admin: UserInDB = Depends(ge
 
 @app.put("/admin/questions/{question_id}", response_model=QuestionAdmin, summary="Update a question", tags=["Admin"])
 def update_question(question_id: int, question: QuestionCreateUpdate, admin: UserInDB = Depends(get_current_admin_user)):
-    # ... (code is unchanged)
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute(
-        "UPDATE questions SET lesson_id=%s, content=%s, difficulty_level=%s, correct_answer_text=%s WHERE id=%s RETURNING id;",
-        (question.lesson_id, question.question_text, question.difficulty_level, question.correct_answer_text, question_id)
-    )
-    if cur.fetchone() is None:
-        raise HTTPException(status_code=404, detail="Question not found.")
+    cur.execute("UPDATE questions SET lesson_id=%s, content=%s, difficulty_level=%s, correct_answer_text=%s WHERE id=%s RETURNING id;", (question.lesson_id, question.question_text, question.difficulty_level, question.correct_answer_text, question_id))
+    if cur.fetchone() is None: raise HTTPException(status_code=404, detail="Question not found.")
     conn.commit()
     cur.close()
     conn.close()
@@ -566,12 +485,10 @@ def update_question(question_id: int, question: QuestionCreateUpdate, admin: Use
 
 @app.delete("/admin/questions/{question_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a question", tags=["Admin"])
 def delete_question(question_id: int, admin: UserInDB = Depends(get_current_admin_user)):
-    # ... (code is unchanged)
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM questions WHERE id = %s RETURNING id;", (question_id,))
-    if cur.fetchone() is None:
-        raise HTTPException(status_code=404, detail="Question not found.")
+    if cur.fetchone() is None: raise HTTPException(status_code=404, detail="Question not found.")
     conn.commit()
     cur.close()
     conn.close()

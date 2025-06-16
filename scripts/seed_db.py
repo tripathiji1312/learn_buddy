@@ -40,7 +40,7 @@ def seed_database():
 
         print("Dropping existing tables...")
         # MODIFIED: Add new tables to the drop list
-        cur.execute("DROP TABLE IF EXISTS user_quests, quests, bandit_state, user_progress, questions, users CASCADE;")
+        cur.execute("DROP TABLE IF EXISTS user_achievements, achievements, user_quests, quests, bandit_state, user_progress, questions, users CASCADE;")
 
         print("Creating tables from schema.sql...")
         with open('schema.sql', 'r') as f:
@@ -49,7 +49,7 @@ def seed_database():
         print("Tables created successfully.")
 
         print("Inserting sample data...")
-        # Insert users (unchanged)
+        # Insert users
         cur.execute(
             "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s);",
             ('testuser', 'test@example.com', get_password_hash('testpass'))
@@ -62,41 +62,45 @@ def seed_database():
             ("admin", "admin@learnbuddy.com", get_password_hash("adminpassword"))
         )
 
-        # Insert questions (unchanged)
+        # Insert questions
         sample_questions = [
-            (1, 'What is two plus two?', 1, '4'),
-            (1, 'What is five plus seven?', 1, '12'),
-            (1, 'What is ten minus the number three?', 1, '7'),
-            (1, 'What is eight multiplied by two?', 2, '16'),
-            (1, 'What is twelve times three?', 2, '36'),
-            (1, 'What is fifteen divided by five?', 2, '3'),
-            (1, 'What is one hundred divided by four?', 3, '25'),
-            (1, 'What is the square root of eighty one?', 3, '9'),
-            (1, 'What is 7 squared?', 3, '49'),
-            (1, 'If a train travels at 100 km/h, how long does it take to travel 250 km?', 4, '2.5 hours'),
-            (1, 'What is 3 to the power of 4?', 4, '81'),
-            (1, 'Solve for x: 4x + 7 = 35', 4, '7'),
+            (1, 'What is two plus two?', 1, '4'), (1, 'What is five plus seven?', 1, '12'),
+            (1, 'What is ten minus the number three?', 1, '7'), (1, 'What is eight multiplied by two?', 2, '16'),
+            (1, 'What is twelve times three?', 2, '36'), (1, 'What is fifteen divided by five?', 2, '3'),
+            (1, 'What is one hundred divided by four?', 3, '25'), (1, 'What is the square root of eighty one?', 3, '9'),
+            (1, 'What is 7 squared?', 3, '49'), (1, 'If a train travels at 100 km/h, how long does it take to travel 250 km?', 4, '2.5 hours'),
+            (1, 'What is 3 to the power of 4?', 4, '81'), (1, 'Solve for x: 4x + 7 = 35', 4, '7'),
             (1, 'What is the area of a circle with a radius of 10 units?', 5, '314.16'),
             (1, 'If a box has a volume of 125 cubic meters, what is the length of one side?', 5, '5 meters')
         ]
         insert_query_q = "INSERT INTO questions (lesson_id, content, difficulty_level, correct_answer_text) VALUES (%s, %s, %s, %s);"
         cur.executemany(insert_query_q, sample_questions)
 
-        # --- NEW: Insert sample quests ---
-        print("Inserting sample quests...")
+        # Insert sample quests
         sample_quests = [
-            # title, description, quest_type, completion_target, xp_reward
             ('First Steps', 'Answer 3 questions to complete your first quest!', 'TOTAL_ANSWERS', 3, 25),
             ('Sharp Shooter', 'Get 5 answers correct.', 'CORRECT_ANSWERS', 5, 50),
             ('Quick Learner', 'Complete a quest in under 5 minutes.', 'TIME_BASED', 300, 75)
         ]
         insert_query_quests = "INSERT INTO quests (title, description, quest_type, completion_target, xp_reward) VALUES (%s, %s, %s, %s, %s);"
         cur.executemany(insert_query_quests, sample_quests)
-        print(f"Seeded {len(sample_quests)} quests.")
+
+        # --- NEW: Insert sample achievements ---
+        print("Inserting sample achievements...")
+        sample_achievements = [
+            # name, description, icon_class, criteria_type, criteria_value, xp_reward
+            ('First Correct Answer', 'You answered your first question correctly!', 'fas fa-check', 'CORRECT_ANSWERS_TOTAL', 1, 10),
+            ('Curious Learner', 'You answered a total of 10 questions.', 'fas fa-search', 'ANSWERS_TOTAL', 10, 20),
+            ('Knowledge Seeker', 'You answered 10 questions correctly.', 'fas fa-brain', 'CORRECT_ANSWERS_TOTAL', 10, 50),
+            ('On Fire!', 'You achieved a 3-day login streak.', 'fas fa-fire', 'STREAK', 3, 75)
+        ]
+        insert_query_achievements = "INSERT INTO achievements (name, description, icon_class, criteria_type, criteria_value, xp_reward) VALUES (%s, %s, %s, %s, %s, %s);"
+        cur.executemany(insert_query_achievements, sample_achievements)
+        print(f"Seeded {len(sample_achievements)} achievements.")
         # --- END OF NEW LOGIC ---
 
         conn.commit()
-        print(f"Seeded users, {len(sample_questions)} questions, and quests.")
+        print(f"Seeded users, {len(sample_questions)} questions, quests, and achievements.")
         print("--- Database Seed Successful ---")
 
     except Exception as e:

@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const questTitleEl = document.getElementById('quest-title');
     const questContentEl = document.getElementById('quest-content');
     
+    // Achievement Elements - NEW
+    const achievementsListEl = document.getElementById('achievements-list');
+
     // Question Elements
     const questionTextEl = document.getElementById('question-text');
     const userAnswerTextarea = document.getElementById('user-answer');
@@ -138,42 +141,58 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) { showError(error.message); submitAnswerBtn.disabled = false; } 
         finally { hideLoading(); }
     };
+
+    const updateAchievementsUI = (achievements) => {
+        if (achievements.length === 0) {
+            achievementsListEl.innerHTML = `
+                <div class="achievement-placeholder">
+                    <i class="fas fa-trophy"></i>
+                    <p>Answer questions correctly to unlock achievements!</p>
+                </div>`;
+            return;
+        }
+
+        achievementsListEl.innerHTML = '';
+        achievements.forEach(ach => {
+            const item = document.createElement('div');
+            item.className = 'achievement-item';
+            item.innerHTML = `
+                <div class="achievement-icon"><i class="${ach.icon_class}"></i></div>
+                <div class="achievement-details">
+                    <h4>${ach.name}</h4>
+                    <p>${ach.description}</p>
+                </div>
+            `;
+            achievementsListEl.appendChild(item);
+        });
+    };
     
     const loadInitialData = async () => {
         try {
-            const [stats, quest] = await Promise.all([ apiFetch('/users/me/stats'), apiFetch('/quests/today') ]);
+            const [stats, quest, achievements] = await Promise.all([
+                apiFetch('/users/me/stats'),
+                apiFetch('/quests/today'),
+                apiFetch('/achievements') // Fetch achievements
+            ]);
+
             usernameDisplay.textContent = username;
             xpCountEl.textContent = stats.xp;
             streakCountEl.textContent = stats.streak_count;
 
             questTitleEl.textContent = quest.title;
             if (quest.is_completed) {
-                // User has finished the quest for today
-                questContentEl.innerHTML = `
-                    <div class="quest-placeholder">
-                        <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
-                        <h4>Quest Complete!</h4>
-                        <p>You've earned your daily bonus! Feel free to keep practicing.</p>
-                    </div>`;
-                
-                // The button is ALWAYS enabled. We just change the text.
+                questContentEl.innerHTML = `<div class="quest-placeholder"><i class="fas fa-check-circle" style="color: var(--success-color);"></i><h4>Quest Complete!</h4><p>You've earned your daily bonus! Feel free to keep practicing.</p></div>`;
                 nextQuestionBtn.disabled = false;
                 nextQuestionBtn.textContent = 'Practice More';
-
             } else {
-                // User still has an active quest
                 const progressPercent = (quest.current_progress / quest.completion_target) * 100;
-                questContentEl.innerHTML = `
-                    <p class="quest-description">${quest.description}</p>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: ${progressPercent}%"></div>
-                    </div>
-                    <p class="quest-progress">${quest.current_progress} / ${quest.completion_target}</p>`;
-                
-                // Ensure the button is enabled and has the correct text.
+                questContentEl.innerHTML = `<p class="quest-description">${quest.description}</p><div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div><p class="quest-progress">${quest.current_progress} / ${quest.completion_target}</p>`;
                 nextQuestionBtn.disabled = false;
                 nextQuestionBtn.textContent = 'Continue Quest';
             }
+            
+            updateAchievementsUI(achievements); // Display achievements
+
         } catch (error) { showError(`Failed to load dashboard data: ${error.message}`); }
     };
 
