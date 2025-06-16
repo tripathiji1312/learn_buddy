@@ -11,111 +11,108 @@
 </head>
 
 <body class="app-body">
-        <!-- App Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <div class="app-logo">
-                        <i class="fas fa-robot"></i>
-                        <span>LearnBuddy</span>
-                    </div>
-                    <!-- NEW: Accessibility Controls -->
-                    <div class="accessibility-controls">
-                        <div class="control-group">
-                            <label for="high-contrast-toggle" class="sr-only">High Contrast</label>
-                            <i class="fas fa-adjust"></i>
-                            <label class="switch">
-                                <input type="checkbox" id="high-contrast-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="control-group">
-                            <i class="fas fa-text-height"></i>
-                            <button id="decrease-font-btn" class="font-control-btn" aria-label="Decrease font size">A-</button>
-                            <button id="increase-font-btn" class="font-control-btn" aria-label="Increase font size">A+</button>
-                        </div>
-                    </div>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="app-logo">
+                    <i class="fas fa-robot"></i>
+                    <span>LearnBuddy</span>
                 </div>
-                <div class="header-right">
-                    <!-- User stats section (unchanged) -->
-                    <div class="user-stats">
-                        <div class="stat-item">
-                            <i class="fas fa-fire"></i>
-                            <div class="stat-info">
-                                <span class="stat-value" id="streak-count">0</span>
-                                <span class="stat-label">Day Streak</span>
-                            </div>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-star"></i>
-                            <div class="stat-info">
-                                <span class="stat-value" id="xp-count">0</span>
-                                <span class="stat-label">XP</span>
-                            </div>
-                        </div>
+                <!-- THIS IS THE MISSING PIECE -->
+                <div class="user-greeting">
+                    <h2>Welcome back, <span id="username-display">Learner</span>!</h2>
+                    <p>Ready for today's learning adventure?</p>
+                </div>
+                <div class="accessibility-controls">
+                    <div class="control-group">
+                        <label for="high-contrast-toggle" class="sr-only">High Contrast</label>
+                        <i class="fas fa-adjust"></i>
+                        <label class="switch">
+                            <input type="checkbox" id="high-contrast-toggle">
+                            <span class="slider round"></span>
+                        </label>
                     </div>
-                    <button class="btn btn-outline" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Logout
-                    </button>
+                    <div class="control-group">
+                        <i class="fas fa-text-height"></i>
+                        <button id="decrease-font-btn" class="font-control-btn"
+                            aria-label="Decrease font size">A-</button>
+                        <button id="increase-font-btn" class="font-control-btn"
+                            aria-label="Increase font size">A+</button>
+                    </div>
                 </div>
             </div>
-            </header>
+            <div class="header-right">
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-fire"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="streak-count">0</span>
+                            <span class="stat-label">Day Streak</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-star"></i>
+                        <div class="stat-info">
+                            <span class="stat-value" id="xp-count">0</span>
+                            <span class="stat-label">XP</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn btn-outline">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
 
     <!-- Main Content -->
     <main class="app-main">
         <!-- Dashboard View -->
         <div id="dashboard-view" class="view active">
             <div class="dashboard-grid">
-                <!-- MODIFIED: Quest card is now dynamic -->
                 <div class="quest-card">
                     <div class="quest-header">
                         <h3 id="quest-title">Today's Quest</h3>
                     </div>
                     <div class="quest-content" id="quest-content">
-                        <!-- Content will be injected by JS -->
                         <div class="quest-placeholder">
                             <i class="fas fa-spinner fa-spin"></i>
                             <h4>Loading your quest...</h4>
                         </div>
                     </div>
                     <div class="quest-actions">
-                        <!-- MODIFIED: Buttons are simplified -->
-                        <button id="next-question-btn" class="btn btn-primary" onclick="getNextQuestion()">
+                        <button id="next-question-btn" class="btn btn-primary">
                             <i class="fas fa-arrow-right"></i>
                             Continue Quest
                         </button>
                     </div>
                 </div>
-
-                <!-- Progress Card (No Changes) -->
                 <div class="progress-card">
                     <h3>Your Progress</h3>
                     <div class="progress-ring-container">
                         <svg class="progress-ring" width="120" height="120">
                             <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" stroke-width="6" />
-                            <circle cx="60" cy="60" r="54" fill="none" stroke="#667eea" stroke-width="6"
-                                stroke-dasharray="340" stroke-dashoffset="340" class="progress-circle"
-                                id="progress-circle" />
+                            <circle id="progress-circle" class="progress-circle" cx="60" cy="60" r="54" fill="none"
+                                stroke="#667eea" stroke-width="6" stroke-dasharray="340" stroke-dashoffset="340" />
                         </svg>
                         <div class="progress-text">
-                            <span class="progress-percentage" id="progress-percentage">0%</span>
+                            <span id="progress-percentage" class="progress-percentage">0%</span>
                             <span class="progress-label">Complete</span>
                         </div>
                     </div>
                     <div class="progress-stats">
                         <div class="progress-stat">
-                            <span class="stat-number" id="correct-answers">0</span>
+                            <span id="correct-answers" class="stat-number">0</span>
                             <span class="stat-name">Correct</span>
                         </div>
                         <div class="progress-stat">
-                            <span class="stat-number" id="total-questions">0</span>
+                            <span id="total-questions" class="stat-number">0</span>
                             <span class="stat-name">Total</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- Achievements Card (No Changes) -->
                 <div class="achievements-card">
                     <h3>Recent Achievements</h3>
                     <div class="achievements-list" id="achievements-list">
@@ -128,11 +125,11 @@
             </div>
         </div>
 
-        <!-- Question View (No Changes to this section) -->
+        <!-- Question View -->
         <div id="question-view" class="view">
             <div class="question-container">
                 <div class="question-header">
-                    <button class="btn btn-outline" onclick="backToDashboard()">
+                    <button id="back-to-dashboard-btn" class="btn btn-outline">
                         <i class="fas fa-arrow-left"></i>
                         Back to Dashboard
                     </button>
@@ -144,30 +141,26 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="question-card">
                     <div class="question-text" id="question-text">
                         <p>Loading your personalized question...</p>
                     </div>
-
                     <div class="answer-section">
                         <div class="form-group">
                             <label for="user-answer">Your Answer:</label>
                             <textarea id="user-answer" placeholder="Type your answer here..." rows="4"></textarea>
                         </div>
-
                         <div class="answer-actions">
-                            <button id="submit-answer-btn" class="btn btn-primary" onclick="submitAnswer()">
+                            <button id="submit-answer-btn" class="btn btn-primary">
                                 <i class="fas fa-paper-plane"></i>
                                 Submit Answer
                             </button>
-                            <button id="skip-question-btn" class="btn btn-outline" onclick="skipQuestion()">
+                            <button id="skip-question-btn" class="btn btn-outline">
                                 <i class="fas fa-forward"></i>
                                 Skip Question
                             </button>
                         </div>
                     </div>
-
                     <div id="answer-feedback" class="answer-feedback hidden">
                         <div class="feedback-content">
                             <div class="feedback-icon" id="feedback-icon">
@@ -182,7 +175,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="continueToNext()">
+                        <button id="continue-btn" class="btn btn-primary">
                             <i class="fas fa-arrow-right"></i>
                             Continue
                         </button>
@@ -192,7 +185,7 @@
         </div>
     </main>
 
-    <!-- Overlays and Modals (No Changes) -->
+    <!-- Modals and Overlays -->
     <div id="loading-overlay" class="loading-overlay hidden">
         <div class="loading-content">
             <div class="loading-spinner">
@@ -205,18 +198,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Oops! Something went wrong</h3>
-                <button class="modal-close" onclick="closeErrorModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button id="error-modal-close-btn" class="modal-close"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <p id="error-modal-text">We encountered an issue. Please try again.</p>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeErrorModal()">
-                    Got it
-                </button>
-            </div>
+            <div class="modal-footer"><button id="error-modal-confirm-btn" class="btn btn-primary">Got it</button></div>
         </div>
     </div>
     <div id="celebration" class="celebration hidden">

@@ -64,3 +64,24 @@ CREATE TABLE user_quests (
     is_completed BOOLEAN DEFAULT FALSE,
     UNIQUE(user_id, assigned_date) -- Ensures a user only gets one quest per day
 );
+-- (Keep all the existing tables: users, questions, user_progress, etc.)
+
+-- NEW TABLE: Stores the definitions for all possible achievements.
+CREATE TABLE achievements (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    icon_class VARCHAR(50) NOT NULL, -- e.g., 'fas fa-brain', 'fas fa-fire'
+    criteria_type VARCHAR(50) NOT NULL, -- e.g., 'CORRECT_ANSWERS_TOTAL', 'STREAK'
+    criteria_value INT NOT NULL,
+    xp_reward INT NOT NULL
+);
+
+-- NEW TABLE: Links users to the achievements they have unlocked.
+CREATE TABLE user_achievements (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    achievement_id INT REFERENCES achievements(id) ON DELETE CASCADE,
+    unlocked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, achievement_id) -- A user can only earn each achievement once
+);

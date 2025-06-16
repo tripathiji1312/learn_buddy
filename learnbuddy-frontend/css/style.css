@@ -2629,3 +2629,42 @@ body.high-contrast .progress-bar-container {
 body.high-contrast .progress-bar {
     background: #FFFF00;
 }
+/* --- NEW: Achievement Card Styles --- */
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: #110e24;
+    padding: 0.75rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--gray-700);
+}
+
+.achievement-item.high-contrast {
+    background: #000;
+    border-color: #fff;
+}
+
+.achievement-icon {
+    font-size: 1.5rem;
+    color: var(--warning-color);
+    min-width: 30px;
+    text-align: center;
+}
+
+.achievement-details h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.achievement-details p {
+    font-size: 0.875rem;
+    color: var(--gray-400);
+}
