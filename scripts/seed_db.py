@@ -3,9 +3,7 @@ import os
 import sys
 from urllib.parse import urlparse
 
-# --- NEW: Path Correction ---
-# This allows the script to find modules in the 'src' directory (like security.py)
-# when run from the project's root directory (e.g., `python scripts/seed_db.py`).
+# --- Path Correction ---
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.security import get_password_hash
 
@@ -31,7 +29,7 @@ def get_db_connection_from_url():
 def seed_database():
     """
     Wipes the database, runs the schema.sql file to create tables,
-    and then inserts fresh sample data, including a default admin user.
+    and then inserts fresh sample data.
     """
     conn = None
     cur = None
@@ -41,46 +39,31 @@ def seed_database():
         print("--- Database connection successful ---")
 
         print("Dropping existing tables...")
-        cur.execute("DROP TABLE IF EXISTS bandit_state, user_progress, questions, users CASCADE;")
+        # MODIFIED: Add new tables to the drop list
+        cur.execute("DROP TABLE IF EXISTS user_quests, quests, bandit_state, user_progress, questions, users CASCADE;")
 
         print("Creating tables from schema.sql...")
-        # Your schema.sql should already have the `is_admin` column added to the users table.
         with open('schema.sql', 'r') as f:
             cur.execute(f.read())
 
         print("Tables created successfully.")
 
         print("Inserting sample data...")
-        # Insert a regular test user
+        # Insert users (unchanged)
         cur.execute(
             "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s);",
             ('testuser', 'test@example.com', get_password_hash('testpass'))
         )
-        
-        # --- NEW: Insert a default admin user ---
-        print("Creating default admin user...")
-        admin_username = "admin"
-        admin_email = "admin@learnbuddy.com"
-        # IMPORTANT: In a real production environment, use a strong password
-        # loaded from a secure source (like an environment variable), not hardcoded.
-        admin_password = "adminpassword"
-        admin_hashed_password = get_password_hash(admin_password)
-
-        # Insert the admin user with the is_admin flag set to TRUE.
-        # ON CONFLICT ensures this doesn't fail if the script is run multiple times.
         cur.execute(
             """
             INSERT INTO users (username, email, password_hash, is_admin)
-            VALUES (%s, %s, %s, TRUE)
-            ON CONFLICT (username) DO NOTHING;
+            VALUES (%s, %s, %s, TRUE) ON CONFLICT (username) DO NOTHING;
             """,
-            (admin_username, admin_email, admin_hashed_password)
+            ("admin", "admin@learnbuddy.com", get_password_hash("adminpassword"))
         )
-        print(f"Admin user '{admin_username}' created or already exists.")
-        # --- END OF NEW LOGIC ---
 
+        # Insert questions (unchanged)
         sample_questions = [
-            # lesson_id, content, difficulty_level, correct_answer_text
             (1, 'What is two plus two?', 1, '4'),
             (1, 'What is five plus seven?', 1, '12'),
             (1, 'What is ten minus the number three?', 1, '7'),
@@ -96,11 +79,24 @@ def seed_database():
             (1, 'What is the area of a circle with a radius of 10 units?', 5, '314.16'),
             (1, 'If a box has a volume of 125 cubic meters, what is the length of one side?', 5, '5 meters')
         ]
-        insert_query = "INSERT INTO questions (lesson_id, content, difficulty_level, correct_answer_text) VALUES (%s, %s, %s, %s);"
-        cur.executemany(insert_query, sample_questions)
+        insert_query_q = "INSERT INTO questions (lesson_id, content, difficulty_level, correct_answer_text) VALUES (%s, %s, %s, %s);"
+        cur.executemany(insert_query_q, sample_questions)
+
+        # --- NEW: Insert sample quests ---
+        print("Inserting sample quests...")
+        sample_quests = [
+            # title, description, quest_type, completion_target, xp_reward
+            ('First Steps', 'Answer 3 questions to complete your first quest!', 'TOTAL_ANSWERS', 3, 25),
+            ('Sharp Shooter', 'Get 5 answers correct.', 'CORRECT_ANSWERS', 5, 50),
+            ('Quick Learner', 'Complete a quest in under 5 minutes.', 'TIME_BASED', 300, 75)
+        ]
+        insert_query_quests = "INSERT INTO quests (title, description, quest_type, completion_target, xp_reward) VALUES (%s, %s, %s, %s, %s);"
+        cur.executemany(insert_query_quests, sample_quests)
+        print(f"Seeded {len(sample_quests)} quests.")
+        # --- END OF NEW LOGIC ---
 
         conn.commit()
-        print(f"Seeded 1 regular user, 1 admin user, and {len(sample_questions)} questions.")
+        print(f"Seeded users, {len(sample_questions)} questions, and quests.")
         print("--- Database Seed Successful ---")
 
     except Exception as e:
