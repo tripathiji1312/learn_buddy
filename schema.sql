@@ -1,17 +1,20 @@
 -- This table stores user login info and their experience points (XP).
--- MODIFIED to include an admin flag.
+-- MODIFIED to include an admin flag AND streak-tracking columns.
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     xp INT DEFAULT 0,
-    is_admin BOOLEAN DEFAULT FALSE, -- NEW: Flag for admin users
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    is_admin BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    -- NEW: Columns for tracking daily streaks
+    last_login_date DATE,
+    streak_count INT DEFAULT 0
 );
 
 -- This table stores questions for the lessons.
--- It is MODIFIED to include a text-based answer for our NLP model.
+-- (No changes here)
 CREATE TABLE questions (
     id SERIAL PRIMARY KEY,
     lesson_id INT NOT NULL,
@@ -21,6 +24,7 @@ CREATE TABLE questions (
 );
 
 -- This table tracks every answer a user gives.
+-- (No changes here)
 CREATE TABLE user_progress (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -29,8 +33,8 @@ CREATE TABLE user_progress (
     answered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- NEW TABLE: Stores the state of our Reinforcement Learning model.
--- This is the "memory" for the AI to learn about each user.
+-- This table stores the state of our Reinforcement Learning model.
+-- (No changes here)
 CREATE TABLE bandit_state (
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     lesson_id INT NOT NULL,
@@ -38,4 +42,25 @@ CREATE TABLE bandit_state (
     times_selected INT DEFAULT 1,
     successful_outcomes INT DEFAULT 0,
     PRIMARY KEY (user_id, lesson_id, difficulty_level)
+);
+
+-- NEW TABLE: Stores the definitions for all possible quests.
+CREATE TABLE quests (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    quest_type VARCHAR(50) NOT NULL, -- e.g., 'CORRECT_ANSWERS', 'TOTAL_ANSWERS'
+    completion_target INT NOT NULL, -- e.g., 5 for "Answer 5 questions correctly"
+    xp_reward INT NOT NULL
+);
+
+-- NEW TABLE: Tracks the active quest for each user for the current day.
+CREATE TABLE user_quests (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    quest_id INT REFERENCES quests(id) ON DELETE CASCADE,
+    assigned_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    current_progress INT DEFAULT 0,
+    is_completed BOOLEAN DEFAULT FALSE,
+    UNIQUE(user_id, assigned_date) -- Ensures a user only gets one quest per day
 );
