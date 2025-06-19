@@ -6,14 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LearnBuddy - Admin Login</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 
 <body class="auth-body">
+    <!-- Floating Navbar -->
+    <div class="navbar-container" id="navbar-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">
+                    <div class="logo-icon-v5">
+                        <div class="shape1"></div>
+                        <div class="shape2"></div>
+                    </div>
+                    <span>LearnBuddy</span>
+                </a>
+                <div class="nav-menu">
+                    <a href="index.html#features-v3" class="nav-link">Features</a>
+                    <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+                    <a href="index.html#testimonials-v3" class="nav-link">Testimonials</a>
+                    <a href="auth.html" class="btn btn-primary">Get Started</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="aurora-background-v5">
+        <div class="aurora-shape aurora-1"></div>
+        <div class="aurora-shape aurora-2"></div>
+        <div class="aurora-shape aurora-3"></div>
+    </div>
     <div class="auth-container">
         <div class="auth-content" style="grid-template-columns: 1fr;">
-            <div class="auth-card">
+            <div class="auth-card glass-card">
                 <div class="auth-header">
                     <h1 id="auth-title">Admin Panel</h1>
                     <p id="auth-subtitle">Please sign in to continue</p>
@@ -54,6 +79,26 @@
             </div>
         </div>
     </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content container">
+            <div class="footer-brand nav-logo">
+                <div class="logo-icon-v5">
+                    <div class="shape1"></div>
+                    <div class="shape2"></div>
+                </div>
+                <span>LearnBuddy</span>
+            </div>
+            <div class="footer-links">
+                <a href="index.html#features-v3">Features</a>
+                <a href="index.html#how-it-works">How It Works</a>
+                <a href="index.html#testimonials-v3">Testimonials</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2024 LearnBuddy. All rights reserved.</span>
+        </div>
+    </footer>
     <script src="js/admin-auth.js"></script>
 </body>
 

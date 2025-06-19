@@ -4,180 +4,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearnBuddy - AI Learning Companion for Everyone</title>
+    <title>LearnBuddy - The Future of Personalized Learning</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.0/dist/vanilla-tilt.min.js"></script>
+    
+    <!-- V5: GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
 </head>
-
-
 
 <body>
 
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="nav-logo">
-                <i class="fas fa-robot"></i>
-                <span>LearnBuddy</span>
-            </a>
-            <div class="nav-menu">
-                <a href="#why-us" class="nav-link">Why LearnBuddy?</a>
-                <a href="#accessibility" class="nav-link">Accessibility</a>
-                <a href="auth.html" class="btn btn-primary">Get Started</a>
+    <!-- V5 Floating Navigation -->
+    <div class="navbar-container" id="navbar-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">
+                    <div class="logo-icon-v5">
+                        <div class="shape1"></div>
+                        <div class="shape2"></div>
+                    </div>
+                    <span>LearnBuddy</span>
+                </a>
+                <div class="nav-menu">
+                    <a href="#features-v3" class="nav-link">Features</a>
+                    <a href="#how-it-works" class="nav-link">How It Works</a>
+                    <a href="#testimonials-v3" class="nav-link">Testimonials</a>
+                    <a href="auth.html" class="btn btn-primary">Get Started</a>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </div>
 
-    <!-- Hero Section -->
+
+    <!-- V5 Hero Section -->
     <section class="hero">
-        <div class="aurora-background"></div>
+        <div class="aurora-background-v5">
+            <div class="aurora-shape aurora-1"></div>
+            <div class="aurora-shape aurora-2"></div>
+            <div class="aurora-shape aurora-3"></div>
+        </div>
         <div class="hero-content container">
             <div class="hero-text">
-                <h1 class="hero-title">
-                    Your Personal AI Tutor,
-                    <span class="gradient-text">Reimagined.</span>
+                <h1 class="hero-title" id="hero-title">
+                    Learning, <span class="gradient-text">Reimagined.</span><br> Just for You.
                 </h1>
-                <p class="hero-subtitle">
-                    Experience learning that adapts to you. Our AI-powered platform makes education fun, engaging, and
-                    accessible to every child, regardless of ability.
+                <p class="hero-subtitle" id="hero-subtitle">
+                    Step into the future of education. LearnBuddy is your personal AI tutor that makes learning adaptive, engaging, and genuinely fun.
                 </p>
-                <div class="hero-actions">
+                <div class="hero-actions" id="hero-actions">
                     <a href="auth.html" class="btn btn-primary btn-large">
                         <i class="fas fa-rocket"></i>
-                        Start Your Free Journey
+                        Start Your Journey Free
                     </a>
                 </div>
-            </div>
-            <div class="hero-visual">
-                <div class="floating-card card-1">
-                    <i class="fas fa-puzzle-piece"></i>
-                    <span>Math Puzzle</span>
-                    <div class="xp-badge">+50 XP</div>
-                </div>
-                <div class="floating-card card-2">
-                    <div class="progress-ring">
-                        <svg class="ring-svg" width="80" height="80">
-                            <circle cx="40" cy="40" r="36" fill="none" stroke="#ffffff33" stroke-width="4" />
-                            <circle cx="40" cy="40" r="36" fill="none" stroke="#fff" stroke-width="4"
-                                stroke-dasharray="226" stroke-dashoffset="56" class="progress-circle" />
-                        </svg>
+                <div class="social-proof" id="social-proof">
+                    <div class="user-avatars">
+                        <img src="https://i.pravatar.cc/36?img=1" alt="User Avatar">
+                        <img src="https://i.pravatar.cc/36?img=2" alt="User Avatar">
+                        <img src="https://i.pravatar.cc/36?img=3" alt="User Avatar">
                     </div>
-                    <span>75% Complete</span>
+                    <p class="social-proof-text">Join <strong>10,000+</strong> Happy Learners</p>
                 </div>
-                <div class="floating-card card-3">
-                    <i class="fas fa-fire"></i>
-                    <span>7 Day Streak!</span>
-                </div>
-                <div class="floating-card card-4">
-                    <i class="fas fa-brain"></i>
-                    <span>Adaptive AI</span>
+            </div>
+            <div class="hero-visual-v5" id="hero-visual">
+                <div class="interactive-orb-container">
+                    <div class="interactive-orb">
+                        <div class="orb-eye">
+                            <div class="orb-eye-glow"></div>
+                        </div>
+                    </div>
+                    <!-- Orbiting Cards -->
+                    <div class="orbiting-card" id="card1">
+                        <span class="card-title">Daily Quest</span>
+                        <span class="card-value" style="color: var(--accent-cyan);">Geometry</span>
+                    </div>
+                    <div class="orbiting-card" id="card2">
+                         <span class="card-title">Streak</span>
+                         <span class="card-value" style="color: var(--accent-orange);"><i class="fas fa-fire"></i> 14 Days</span>
+                    </div>
+                    <div class="orbiting-card" id="card3">
+                        <span class="card-title">New Achievement</span>
+                        <span class="card-value"><i class="fas fa-star" style="color: var(--warning-color);"></i> Math Whiz</span>
+                    </div>
+                    <div class="orbiting-card" id="card4">
+                        <span class="card-title">XP Gained</span>
+                        <span class="card-value" style="color: var(--accent-glow);">+250 XP</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- "Why Us" Section -->
-    <section id="why-us" class="features">
+
+    <!-- Features Section -->
+    <section id="features-v3">
         <div class="container">
-            <div class="section-header">
-                <h2>Why LearnBuddy?</h2>
-                <p>We built a smarter, kinder, and more exciting way to learn.</p>
+            <div class="section-header reveal">
+                <h2>A Smarter Way to Learn</h2>
+                <p>LearnBuddy isn't just another app. It's a comprehensive ecosystem designed for deep, engaging, and effective learning.</p>
             </div>
-            <div class="why-grid">
-                <div class="why-card">
-                    <div class="why-icon-wrapper" style="background: #e9f5ff;">
-                        <i class="fas fa-brain" style="color: #1a73e8;"></i>
+            <div class="features-grid-v3">
+                <div class="feature-card-v3 reveal">
+                    <div class="feature-card-inner">
+                        <i class="fas fa-brain feature-icon-v3"></i>
+                        <h3>Intelligently Adaptive</h3>
+                        <p>Our core AI analyzes your learning patterns in real-time, personalizing every question to the perfect level of challenge.</p>
                     </div>
-                    <h3>Intelligently Adaptive</h3>
-                    <p>Our AI analyzes learning patterns in real time, personalizing every question and lesson to the
-                        perfect level of challenge.</p>
                 </div>
-                <div class="why-card">
-                    <div class="why-icon-wrapper" style="background: #fce8e6;">
-                        <i class="fas fa-gamepad" style="color: #d93025;"></i>
+                <div class="feature-card-v3 reveal" style="transition-delay: 0.2s;">
+                     <div class="feature-card-inner">
+                        <i class="fas fa-gamepad feature-icon-v3" style="color: var(--accent-cyan)"></i>
+                        <h3>Genuinely Fun</h3>
+                        <p>Unlock achievements, earn XP, and maintain streaks. Learning feels less like a chore and more like an exciting adventure.</p>
                     </div>
-                    <h3>Genuinely Fun</h3>
-                    <p>Unlock achievements, earn XP, and maintain streaks. Learning feels less like a chore and more
-                        like an exciting adventure.</p>
                 </div>
-                <div class="why-card">
-                    <div class="why-icon-wrapper" style="background: #e6f4ea;">
-                        <i class="fas fa-universal-access" style="color: #1e8e3e;"></i>
+                <div class="feature-card-v3 reveal" style="transition-delay: 0.4s;">
+                     <div class="feature-card-inner">
+                        <i class="fas fa-universal-access feature-icon-v3"></i>
+                        <h3>Accessible By Design</h3>
+                        <p>From day one, we've focused on inclusivity, ensuring every learner has the tools they need to succeed.</p>
                     </div>
-                    <h3>Accessible By Design</h3>
-                    <p>From day one, we've focused on inclusivity, ensuring every learner has the tools they need to
-                        succeed. More on this below!</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Accessibility Section -->
-    <section id="accessibility" class="accessibility-section">
+    <!-- How It Works Section -->
+    <section id="how-it-works">
         <div class="container">
-            <div class="section-header">
-                <h2 class="gradient-text">Learning Without Barriers</h2>
-                <p>We are committed to providing an inclusive platform where every child can thrive.</p>
+            <div class="section-header reveal">
+                <h2>Get Started in Seconds</h2>
+                <p>Embark on your personalized learning journey with three simple steps.</p>
             </div>
-            <div class="accessibility-grid">
-                <div class="accessibility-column">
-                    <h4>Customizable Interface</h4>
-                    <ul>
-                        <li><i class="fas fa-text-height"></i><span>Text size adjustable up to 200%</span></li>
-                        <li><i class="fas fa-palette"></i><span>Color-blind friendly & high-contrast themes</span></li>
-                        <li><i class="fas fa-font"></i><span>Dyslexia-friendly font options</span></li>
-                    </ul>
+            <div class="how-it-works-grid">
+                <div class="how-step reveal">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3>Create Your Account</h3>
+                        <p>A quick and secure sign-up process gets you into the action without any hassle. Your adventure is just a click away.</p>
+                    </div>
                 </div>
-                <div class="accessibility-column">
-                    <h4>Alternative Inputs</h4>
-                    <ul>
-                        <li><i class="fas fa-keyboard"></i><span>Full keyboard-only navigation</span></li>
-                        <li><i class="fas fa-microphone-alt"></i><span>Voice commands for core actions</span></li>
-                        <li><i class="fas fa-gamepad-alt"></i><span>Switch Control compatibility for motor
-                                impairments</span></li>
-                    </ul>
+                <div class="how-step reveal" style="transition-delay: 0.2s;">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3>Start Your First Quest</h3>
+                        <p>Your AI Buddy immediately assesses your needs and generates a personalized "Daily Quest" to kickstart your learning.</p>
+                    </div>
                 </div>
-                <div class="accessibility-column">
-                    <h4>Content Adaptation</h4>
-                    <ul>
-                        <li><i class="fas fa-pause-circle"></i><span>Pacing controls: pause lessons anytime</span></li>
-                        <li><i class="fas fa-volume-down"></i><span>Adjustable audio speed for read-alouds</span></li>
-                        <li><i class="fas fa-redo-alt"></i><span>Easily repeat prompts and questions</span></li>
-                    </ul>
+                <div class="how-step reveal" style="transition-delay: 0.4s;">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3>Track & Grow</h3>
+                        <p>Watch your knowledge, XP, and skills grow. Our intuitive dashboard shows your progress and celebrates your achievements.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+
 
     <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonials-section">
+    <section id="testimonials-v3">
         <div class="container">
-            <div class="section-header">
+            <div class="section-header reveal">
                 <h2>Loved by Parents and Kids</h2>
+                <p>We're proud to be making a difference in the lives of learners everywhere.</p>
             </div>
-            <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <p>"For the first time, my son is excited about math. The 'Daily Quests' are a brilliant idea. He
-                        sees it as a game, and I see him learning."</p>
+            <div class="testimonials-grid-v3">
+                <div class="testimonial-card-v3 reveal">
+                    <i class="fas fa-quote-right quote-icon"></i>
+                    <p>"For the first time, my son is excited about math. The 'Daily Quests' are a brilliant idea. He sees it as a game, and I see him learning."</p>
                     <div class="testimonial-author">
                         <img src="https://i.pravatar.cc/50?img=12" alt="Avatar of Sarah K.">
                         <span>Sarah K. - Parent</span>
                     </div>
                 </div>
-                <div class="testimonial-card">
-                    <p>"The accessibility features are a game-changer. The text-to-speech and high-contrast mode have
-                        made it possible for my daughter to learn independently."</p>
+                <div class="testimonial-card-v3 reveal" style="transition-delay: 0.2s;">
+                    <i class="fas fa-quote-right quote-icon"></i>
+                    <p>"The accessibility features are a game-changer. The text-to-speech and high-contrast mode have made it possible for my daughter to learn independently."</p>
                     <div class="testimonial-author">
                         <img src="https://i.pravatar.cc/50?img=5" alt="Avatar of David L.">
                         <span>David L. - Parent</span>
                     </div>
                 </div>
-                <div class="testimonial-card">
-                    <p>"I love getting new outfits for my avatar! I just reached Level 10 and unlocked the space world.
-                        It’s the best part of my day."</p>
+                <div class="testimonial-card-v3 reveal" style="transition-delay: 0.4s;">
+                    <i class="fas fa-quote-right quote-icon"></i>
+                    <p>"I love getting new outfits for my avatar! I just reached Level 10 and unlocked the space world. It’s the best part of my day."</p>
                     <div class="testimonial-author">
                         <img src="https://i.pravatar.cc/50?img=7" alt="Avatar of Maya, age 9">
                         <span>Maya - Learner, Age 9</span>
@@ -188,11 +202,11 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta">
+    <section class="cta-v3">
         <div class="container">
-            <div class="cta-content">
+            <div class="cta-content reveal">
                 <h2>Ready to Transform Learning?</h2>
-                <p>Join thousands of learners on a journey to a smarter, more confident future.</p>
+                <p>Join thousands of learners on a journey to a smarter, more confident future. Your first quest is waiting.</p>
                 <a href="auth.html" class="btn btn-primary btn-large">
                     <i class="fas fa-arrow-right"></i>
                     Get Started for Free
@@ -206,17 +220,20 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
-                    <div class="footer-logo">
-                        <i class="fas fa-robot"></i>
+                    <a href="index.html" class="nav-logo">
+                         <div class="logo-icon-v5">
+                            <div class="shape1"></div>
+                            <div class="shape2"></div>
+                        </div>
                         <span>LearnBuddy</span>
-                    </div>
+                    </a>
                     <p>AI-powered learning that adapts to you.</p>
                 </div>
                 <div class="footer-links">
                     <div class="footer-section">
                         <h4>Product</h4>
-                        <a href="#why-us">Why LearnBuddy</a>
-                        <a href="#accessibility">Accessibility</a>
+                        <a href="#features-v3">Features</a>
+                        <a href="#how-it-works">How It Works</a>
                         <a href="#">Pricing</a>
                     </div>
                     <div class="footer-section">
@@ -239,15 +256,76 @@
         </div>
     </footer>
 
-    <script src="js/app.js"></script>
-     <script>
-        VanillaTilt.init(document.querySelectorAll(".floating-card"), {
-            max: 30,
-            speed: 400,
-            glare: true,
-            "max-glare": 0.2
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // V5: GSAP Entrance Animation
+            const tl = gsap.timeline({ defaults: { ease: "power3.out", duration: 0.8 } });
+            
+            tl.fromTo("#navbar-container", { y: -80, opacity: 0 }, { y: 0, opacity: 1 }, 0.4)
+              .fromTo("#hero-title", { y: 40, opacity: 0 }, { y: 0, opacity: 1 }, 0.6)
+              .fromTo("#hero-subtitle", { y: 40, opacity: 0 }, { y: 0, opacity: 1 }, 0.8)
+              .fromTo("#hero-actions", { y: 40, opacity: 0 }, { y: 0, opacity: 1 }, 1.0)
+              .fromTo("#social-proof", { y: 40, opacity: 0 }, { y: 0, opacity: 1 }, 1.2)
+              .fromTo(".interactive-orb", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 1, ease: "elastic.out(1, 0.75)" }, 1.2)
+              .fromTo(".orbiting-card", { scale: 0.5, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, stagger: 0.15 }, 1.5);
+            
+            
+            // V5: Mouse Parallax for Interactive Orb
+            const orbContainer = document.querySelector('.interactive-orb-container');
+            if(orbContainer) {
+                const cards = document.querySelectorAll('.orbiting-card');
+                
+                // --- THE FIX IS HERE ---
+                // Recalculated positions for better spacing
+                const cardPositions = [
+                    { x: -220, y: -160, z: 50 },  // card1 (Top-Left)
+                    { x: 220, y: -150, z: 80 },  // card2 (Streak, Top-Right) - Increased Y separation
+                    { x: -240, y: 160, z: 0 },    // card3 (Bottom-Left)
+                    { x: 250, y: 140, z: 120 }    // card4 (XP Gained, Bottom-Right) - Increased Y separation
+                ];
+                
+                // Set initial positions
+                gsap.set(cards, {
+                    x: (i) => cardPositions[i].x,
+                    y: (i) => cardPositions[i].y,
+                    z: (i) => cardPositions[i].z
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (window.innerWidth < 992) return;
+                    const { clientX, clientY } = e;
+                    const x = (clientX / window.innerWidth) - 0.5;
+                    const y = (clientY / window.innerHeight) - 0.5;
+
+                    gsap.to(orbContainer, {
+                        rotationY: x * 25,
+                        rotationX: -y * 25,
+                        ease: 'power2.out',
+                        duration: 1
+                    });
+                });
+            }
+
+
+            // V5: Scroll reveal animations for other sections
+            const revealElements = document.querySelectorAll('.reveal');
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.15
+            });
+
+            revealElements.forEach(el => {
+                revealObserver.observe(el);
+            });
         });
-        </script>
+    </script>
 </body>
 
 </html>
