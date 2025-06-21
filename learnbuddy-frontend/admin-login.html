@@ -5,52 +5,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LearnBuddy - Admin Login</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin-login.css"> <!-- Changed to index.css -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
-<body class="auth-body">
-    <div class="auth-container">
-        <div class="auth-content" style="grid-template-columns: 1fr;">
-            <div class="auth-card">
-                <div class="auth-header">
-                    <h1 id="auth-title">Admin Panel</h1>
-                    <p id="auth-subtitle">Please sign in to continue</p>
-                </div>
+<body>
+    <div class="aurora-background-v5">
+        <div class="aurora-shape aurora-1"></div>
+        <div class="aurora-shape aurora-2"></div>
+        <div class="aurora-shape aurora-3"></div>
+    </div>
 
-                <form id="admin-login-form" class="auth-form">
-                    <div class="form-group">
-                        <label for="login-username">Admin Username</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-user-shield"></i>
-                            <input type="text" id="login-username" name="username" placeholder="Enter your username"
-                                required>
-                        </div>
+    <div class="admin-login-wrapper">
+        <div class="admin-login-panel">
+            <div class="admin-auth-header">
+                <h1 id="auth-title">Admin Panel</h1>
+                <p id="auth-subtitle">Securely sign in to manage LearnBuddy.</p>
+            </div>
+
+            <form id="admin-login-form" class="admin-auth-form">
+                <div class="form-group">
+                    <label for="login-username">Admin Username</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user-shield"></i>
+                        <input type="text" id="login-username" name="username" placeholder="Enter your username"
+                            required>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="login-password">Password</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="login-password" name="password" placeholder="Enter your password"
-                                required>
-                        </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="login-password" name="password" placeholder="Enter your password"
+                            required>
                     </div>
-
-                    <button type="submit" class="btn btn-primary btn-auth">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Sign In</span>
-                    </button>
-                </form>
-
-                <div id="loading-spinner" class="loading-spinner hidden">
-                    <div class="spinner"></div>
                 </div>
-                <div id="error-message" class="error-message hidden">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span id="error-text"></span>
-                </div>
+
+                <button type="submit" class="btn btn-primary admin-btn-auth">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Sign In</span>
+                </button>
+            </form>
+
+            <div id="loading-spinner" class="loading-spinner-container hidden">
+                <div class="spinner"></div>
+            </div>
+            <div id="error-message" class="error-message-container hidden">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="error-text"></span>
             </div>
         </div>
     </div>

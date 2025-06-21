@@ -1,0 +1,469 @@
+/* Reset and Base Styles - Assuming index.css handles most of this. */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Copied V5 Variables from index.css for standalone use if index.css is not linked or to ensure overrides */
+    /* Colors */
+    --primary-color: #667eea;
+    --primary-dark: #5a67d8;
+    --primary-light: #7c3aed;
+    --secondary-color: #764ba2;
+    --accent-color: #f093fb;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --dark-color: #1a202c;
+    --light-color: #f7fafc;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    --spacing-3xl: 4rem;
+
+    /* Typography */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
+    --font-size-5xl: 3rem;
+
+    /* Border Radius */
+    --border-radius-sm: 0.375rem;
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 0.75rem;
+    --border-radius-xl: 1rem;
+    --border-radius-2xl: 1.5rem;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.3);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* === V5: PREMIUM REDESIGN VARIABLES === */
+    --bg-dark: #0A0A10;
+    --bg-card: #14141c;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-glow: #9333ea;
+    --accent-glow: #9333ea;
+    --accent-cyan: #22d3ee;
+    --accent-orange: #f59e0b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #a1a1aa;
+
+    /* RGB versions for rgba() */
+    --error-color-rgb: 239, 68, 68;
+    --success-color-rgb: 16, 185, 129;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    background-color: var(--bg-dark); /* V5 Body Background */
+    color: var(--text-primary);       /* V5 Body Text Color */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* V5 Button Styles (from index.css) - ensure .btn-primary in auth.html picks this up */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-lg);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    will-change: transform;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+
+.btn-primary {
+    background: var(--accent-glow);
+    color: white;
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.4), 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent-glow);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 0 30px rgba(147, 51, 234, 0.6), 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-large { /* For consistency if used */
+    padding: var(--spacing-md) var(--spacing-2xl);
+    font-size: var(--font-size-lg);
+    border-radius: var(--border-radius-xl);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--accent-cyan); /* V5 link color */
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast), text-decoration var(--transition-fast);
+}
+
+.btn-link:hover {
+    color: var(--accent-glow);
+    text-decoration: underline;
+}
+
+/* Auth Styles - V5 Theming */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-3xl) var(--spacing-lg); /* Increased padding for floating navbar */
+    padding-top: 120px; /* Space for navbar */
+    position: relative; /* For z-indexing above aurora */
+    z-index: 1;
+}
+
+/* Removed .auth-background and .auth-shapes styles as V5 aurora is used from auth.html */
+
+.auth-content {
+    display: grid;
+    grid-template-columns: 1fr; /* Default to 1 column for mobile */
+    gap: var(--spacing-2xl); /* V5 spacing */
+    max-width: 900px; /* Max width for content */
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+@media (min-width: 768px) { /* Adjust breakpoint as needed */
+    .auth-content {
+        grid-template-columns: 1.2fr 1fr; /* Re-apply two-column layout for wider screens */
+         max-width: 1000px;
+    }
+}
+
+
+.auth-card {
+    background: var(--bg-card); /* V5 Card Background */
+    border: 1px solid var(--border-color); /* V5 Border */
+    border-radius: var(--border-radius-xl); /* V5 Border Radius */
+    padding: var(--spacing-2xl); /* V5 Spacing */
+    box-shadow: var(--shadow-xl); /* V5 Shadow */
+    backdrop-filter: blur(10px); /* Optional: Glassmorphism effect */
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl); /* V5 Spacing */
+}
+
+.auth-header h1 {
+    font-size: var(--font-size-2xl); /* V5 Typography */
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary); /* V5 Text Color */
+}
+
+.auth-header p {
+    color: var(--text-secondary); /* V5 Text Color */
+    font-size: var(--font-size-lg);
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg); /* V5 Spacing */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.form-group label {
+    font-weight: 500; /* V5 font weight */
+    color: var(--text-secondary); /* V5 Text Color */
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper i.fa-user,
+.input-wrapper i.fa-lock,
+.input-wrapper i.fa-user-shield,
+.input-wrapper i.fa-envelope {
+    position: absolute;
+    left: var(--spacing-md);
+    color: var(--gray-400); /* Keep or adjust to a V5 secondary icon color */
+    z-index: 1;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) var(--spacing-3xl);
+    border: 1px solid var(--border-color); /* V5 Border */
+    border-radius: var(--border-radius-lg); /* V5 Border Radius */
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    background: var(--bg-dark); /* V5 Input Background */
+    color: var(--text-primary); /* V5 Input Text Color */
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input-wrapper input:focus {
+    outline: none;
+    border-color: var(--accent-glow); /* V5 Accent Focus */
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2); /* V5 Focus Shadow */
+}
+
+.input-wrapper input::placeholder {
+    color: var(--gray-500);
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0;
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: var(--spacing-md);
+    transition: color var(--transition-fast);
+}
+
+.toggle-password:hover {
+    color: var(--accent-cyan); /* V5 Accent Hover */
+}
+
+.btn-auth {
+    padding: var(--spacing-md) var(--spacing-lg); /* V5 Button Padding */
+    font-size: var(--font-size-lg); /* V5 Button Font Size */
+    margin-top: var(--spacing-md);
+    /* .btn-primary styles from above will apply for background, color, shadow etc. */
+}
+
+.auth-divider {
+    text-align: center;
+    position: relative;
+    margin: var(--spacing-lg) 0;
+}
+
+.auth-divider:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-color); /* V5 Border Color */
+}
+
+.auth-divider span {
+    background: var(--bg-card); /* Match card background */
+    padding: 0 var(--spacing-md);
+    color: var(--text-secondary); /* V5 Text Color */
+    position: relative;
+    z-index: 1;
+}
+
+.auth-switch {
+    text-align: center;
+}
+.auth-switch p {
+    color: var(--text-secondary); /* V5 Text Color */
+    margin-bottom: var(--spacing-sm);
+}
+/* .auth-switch .btn-link styles are covered by global .btn-link */
+
+
+/* Message and Spinner Styling - V5 Theme */
+.loading-spinner {
+    text-align: center;
+    padding: var(--spacing-lg);
+}
+.loading-spinner p {
+    color: var(--text-secondary);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color); /* V5 Border Color */
+    border-top: 4px solid var(--accent-glow); /* V5 Accent Color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--spacing-md);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message,
+.success-message {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-lg);
+    margin-top: var(--spacing-md);
+    animation: fadeIn 0.5s ease;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.error-message {
+    background: rgba(var(--error-color-rgb), 0.1); /* V5 Error Background */
+    color: var(--error-color); /* V5 Error Text Color */
+    border-color: rgba(var(--error-color-rgb), 0.3); /* V5 Error Border */
+}
+.error-message i { color: var(--error-color); }
+
+.success-message {
+    background: rgba(var(--success-color-rgb), 0.1); /* V5 Success Background */
+    color: var(--success-color); /* V5 Success Text Color */
+    border-color: rgba(var(--success-color-rgb), 0.3); /* V5 Success Border */
+}
+.success-message i { color: var(--success-color); }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Auth Features Preview - V5 Theme */
+.auth-features {
+    background: rgba(20, 20, 28, 0.7); /* Similar to V5 orbiting cards, slightly more opaque */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-xl); /* V5 Border Radius */
+    padding: var(--spacing-xl); /* V5 Spacing */
+    color: var(--text-primary);
+}
+
+.auth-features h3 {
+    font-size: var(--font-size-xl); /* V5 Typography */
+    font-weight: 600;
+    margin-bottom: var(--spacing-lg);
+    text-align: left; /* Align to left for a cleaner look */
+    color: var(--text-primary);
+}
+
+.feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md); /* V5 Spacing */
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) 0; /* Minimal padding for cleaner list */
+    /* Remove background and border for a flatter list style within the card */
+}
+
+.feature-item i {
+    font-size: var(--font-size-lg); /* V5 Icon Size */
+    color: var(--accent-cyan); /* V5 Accent Color */
+    width: 24px; /* Ensure consistent icon alignment */
+    text-align: center;
+}
+.feature-item span {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+
+/* Remove conflicting styles from old theme if any - these might not be explicitly in style.css but as a cleanup measure */
+.auth-body { /* No longer used */
+    background: none;
+}
+
+.navbar-auth { /* Replaced by V5 navbar, styles now in index.css or copied above if needed */
+    display:none; /* Hide if HTML not removed, but HTML is updated */
+}
+
+/* Other specific styles from the old theme that might conflict */
+/* e.g., if there were specific styles for .hero, .features, .about, .cta, .footer, admin styles, these are not relevant to auth.html and style.css for auth page. */
+/* Keeping style.css focused on auth page elements. */
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .auth-content {
+        grid-template-columns: 1fr; /* Stack auth card and features preview */
+    }
+    .auth-features {
+         margin-top: var(--spacing-xl); /* Add space when stacked */
+    }
+}

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile - LearnBuddy</title>
+    <link rel="stylesheet" href="css/admin-profile.css">
+     <!-- Added link to admin-specific CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Floating Navigation -->
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">
+                    <div class="logo-icon-v5">
+                        <div class="shape1"></div>
+                        <div class="shape2"></div>
+                    </div>
+                    <span>LearnBuddy</span>
+                </a>
+                <div class="nav-menu">
+                    <a href="index.html" class="nav-link">Home Page</a>
+                    <a href="admin.html" class="nav-link">Dashboard</a> <!-- Active link -->
+                    <a href="admin-login.html">
+                        <button id="logout-btn" class="btn btn-outline-v5" style="margin-left: auto;"><i class="fas fa-sign-out-alt"></i>Logout</button>
+                    </a>
+                </div>
+                 <!-- Add a mobile menu toggle here if implementing for smaller screens -->
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <section class="page-main-content">
+        <div class="aurora-background-v5">
+            <div class="aurora-shape aurora-1"></div>
+            <div class="aurora-shape aurora-2"></div>
+            <div class="aurora-shape aurora-3"></div>
+        </div>
+        <div class="container">
+            <h1 class="page-header-title">Admin Control Panel</h1>
+            <p class="page-header-subtitle">Oversee and manage platform settings and user activity.</p>
+
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-shield"></i> <!-- Admin icon -->
+
+                        <!-- Hidden file input -->
+                        <input type="file" id="admin-avatar-upload" accept="image/*" hidden>
+
+                        <!-- Pencil icon label to trigger file input -->
+                        <label for="admin-avatar-upload" class="edit-avatar">
+                            <i class="fas fa-pencil-alt"></i>
+                        </label>
+                    </div>
+
+                    <div class="profile-info">
+                        <p><strong>Admin ID:</strong> <span id="profile-admin-id">ADM-001</span></p>
+                        <p><strong>Role:</strong> <span id="profile-admin-role">Super Administrator</span></p>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3><i class="fas fa-id-badge"></i> Admin Details</h3>
+                    <div class="profile-details-grid">
+                        <div class="detail-item">
+                            <strong>Admin ID</strong>
+                            <p><span id="admin-detail-id">ADM-001</span></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Email Address</strong>
+                            <p><span id="admin-detail-email">admin@learnbuddy.com</span></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Last Login</strong>
+                            <p><span id="admin-detail-last-login">2024-07-28 10:30 AM</span></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Access Level</strong>
+                            <span>Full Control</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3><i class="fas fa-server"></i> Platform Overview</h3>
+                    <div class="profile-details-grid">
+                        <div class="detail-item">
+                            <strong><i class="fas fa-users"></i> Total Users</strong>
+                            <p><span id="stats-total-users">1,250</span></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong><i class="fas fa-book"></i> Active Courses</strong>
+                            <p><span id="platform-active-courses">150</span></p>
+                        </div>
+                        <div class="detail-item">
+                            <strong><i class="fas fa-tasks"></i> Moderation Queue</strong>
+                            <span>12 Pending</span>
+                        </div>
+                         <div class="detail-item">
+                            <strong><i class="fas fa-cogs"></i> System Status</strong>
+                            <span>All Systems Operational</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3><i class="fas fa-tools"></i> Admin Tools</h3>
+                    <div class="achievements-list"> <!-- Reusing .achievements-list for similar styling -->
+                        <span class="achievement-badge"><i class="fas fa-users-cog"></i> User Management</span>
+                        <span class="achievement-badge"><i class="fas fa-edit"></i> Content Editor</span>
+                        <span class="achievement-badge"><i class="fas fa-chart-bar"></i> System Analytics</span>
+                        <span class="achievement-badge"><i class="fas fa-sliders-h"></i> Site Settings</span>
+                        <span class="achievement-badge"><i class="fas fa-headset"></i> Support Tickets</span>
+                        <span class="achievement-badge"><i class="fas fa-bell"></i> Notifications</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="index.html" class="nav-logo">
+                         <div class="logo-icon-v5">
+                            <div class="shape1"></div>
+                            <div class="shape2"></div>
+                        </div>
+                        <span>LearnBuddy</span>
+                    </a>
+                    <p>AI-powered learning that adapts to you.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Product</h4>
+                        <a href="index.html#features-v3">Features</a><br>
+                        <a href="index.html#how-it-works">How It Works</a><br>
+                        <a href="#">Pricing</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Support</h4>
+                        <a href="#">Help Center</a><br>
+                        <a href="#">Contact Us</a><br>
+                        <a href="#">Privacy Policy</a><br>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Connect</h4>
+                        <a href="#"><i class="fab fa-twitter"></i> Twitter</a><br>
+                        <a href="#"><i class="fab fa-discord"></i> Discord</a><br>
+                        <a href="#"><i class="fab fa-github"></i> GitHub</a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 LearnBuddy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script src="js/admin.js"></script> <!-- You might need a different or modified JS for admin specific data -->
+</body>
+
+</html>

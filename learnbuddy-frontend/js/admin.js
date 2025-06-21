@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userPasswordInput = document.getElementById('user-password-input');
     const userXpInput = document.getElementById('user-xp-input');
     const userIsAdminInput = document.getElementById('user-is-admin-input');
-    
+
     // Questions Elements
     const questionsTableBody = document.getElementById('questions-table-body');
     const addQuestionBtn = document.getElementById('add-question-btn');
@@ -57,10 +57,18 @@ document.addEventListener('DOMContentLoaded', () => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         };
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, { headers, ...options });
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            headers,
+            ...options
+        });
 
-        if (response.status === 401) { logout(); return; }
-        if (response.status === 204) { return null; } // Handle 204 No Content for DELETE
+        if (response.status === 401) {
+            logout();
+            return;
+        }
+        if (response.status === 204) {
+            return null;
+        } // Handle 204 No Content for DELETE
 
         const data = await response.json();
         if (!response.ok) {
@@ -85,13 +93,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadDataForView = (view) => {
-        switch(view) {
-            case 'dashboard': loadDashboardData(); break;
-            case 'users': loadUsers(); break;
-            case 'questions': loadQuestions(); break;
+        switch (view) {
+            case 'dashboard':
+                loadDashboardData();
+                break;
+            case 'users':
+                loadUsers();
+                break;
+            case 'questions':
+                loadQuestions();
+                break;
         }
     };
-    
+
     // --- Data Loading & Rendering ---
     const loadDashboardData = async () => {
         showLoading(true);
@@ -101,8 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
             statsTotalQuestions.textContent = data.total_questions;
             statsAnswers.textContent = data.total_answers_submitted;
             renderDifficultyChart(data.questions_by_difficulty);
-        } catch (error) { alert(`Error loading dashboard: ${error.message}`); } 
-        finally { showLoading(false); }
+        } catch (error) {
+            alert(`Error loading dashboard: ${error.message}`);
+        } finally {
+            showLoading(false);
+        }
     };
 
     const renderDifficultyChart = (data) => {
@@ -121,7 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }]
             },
             options: {
-                scales: { y: { beginAtZero: true } },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
                 responsive: true,
                 maintainAspectRatio: false
             }
@@ -153,8 +174,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 usersTableBody.appendChild(row);
             });
-        } catch (error) { usersTableBody.innerHTML = `<tr><td colspan="6" class="error-text">Error loading users: ${error.message}</td></tr>`; } 
-        finally { showLoading(false); }
+        } catch (error) {
+            usersTableBody.innerHTML = `<tr><td colspan="6" class="error-text">Error loading users: ${error.message}</td></tr>`;
+        } finally {
+            showLoading(false);
+        }
     };
 
     const loadQuestions = async () => {
@@ -164,8 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const questions = await apiFetch('/admin/questions');
             questionsTableBody.innerHTML = '';
             if (!questions || questions.length === 0) {
-                 questionsTableBody.innerHTML = '<tr><td colspan="5">No questions found.</td></tr>';
-                 return;
+                questionsTableBody.innerHTML = '<tr><td colspan="5">No questions found.</td></tr>';
+                return;
             }
             questions.forEach(q => {
                 const row = document.createElement('tr');
@@ -181,12 +205,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 questionsTableBody.appendChild(row);
             });
-        } catch (error) { questionsTableBody.innerHTML = `<tr><td colspan="5" class="error-text">Error loading questions: ${error.message}</td></tr>`; } 
-        finally { showLoading(false); }
+        } catch (error) {
+            questionsTableBody.innerHTML = `<tr><td colspan="5" class="error-text">Error loading questions: ${error.message}</td></tr>`;
+        } finally {
+            showLoading(false);
+        }
     };
 
     // --- Modal & Form Handling ---
-    
+
     // User Modal Logic
     const openUserModal = (user = null) => {
         userForm.reset();
@@ -218,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         questionModal.classList.remove('hidden');
     };
     const closeQuestionModal = () => questionModal.classList.add('hidden');
-    
+
     // --- Event Listeners ---
     navItems.forEach(item => {
         if (!item.id?.includes('logout')) {
@@ -228,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
-    
+
     logoutBtn.addEventListener('click', logout);
 
     // Modal Open/Close Listeners
@@ -255,11 +282,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const endpoint = isEditing ? `/admin/users/${id}` : '/admin/users';
         const method = isEditing ? 'PUT' : 'POST';
         try {
-            await apiFetch(endpoint, { method, body: JSON.stringify(payload) });
+            await apiFetch(endpoint, {
+                method,
+                body: JSON.stringify(payload)
+            });
             closeUserModal();
             loadUsers();
-        } catch (error) { alert(`Error saving user: ${error.message}`); } 
-        finally { showLoading(false); }
+        } catch (error) {
+            alert(`Error saving user: ${error.message}`);
+        } finally {
+            showLoading(false);
+        }
     });
 
     questionForm.addEventListener('submit', async (e) => {
@@ -276,11 +309,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const endpoint = isEditing ? `/admin/questions/${id}` : '/admin/questions';
         const method = isEditing ? 'PUT' : 'POST';
         try {
-            await apiFetch(endpoint, { method, body: JSON.stringify(payload) });
+            await apiFetch(endpoint, {
+                method,
+                body: JSON.stringify(payload)
+            });
             closeQuestionModal();
             loadQuestions();
-        } catch (error) { alert(`Error saving question: ${error.message}`); } 
-        finally { showLoading(false); }
+        } catch (error) {
+            alert(`Error saving question: ${error.message}`);
+        } finally {
+            showLoading(false);
+        }
     });
 
     // Main Event Delegation for Edit/Delete Buttons
@@ -306,7 +345,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (confirm(confirmMsg)) {
                     const endpoint = currentView === 'users' ? `/admin/users/${id}` : `/admin/questions/${id}`;
-                    await apiFetch(endpoint, { method: 'DELETE' });
+                    await apiFetch(endpoint, {
+                        method: 'DELETE'
+                    });
                     loadDataForView(currentView);
                 }
             }
@@ -316,7 +357,9 @@ document.addEventListener('DOMContentLoaded', () => {
             showLoading(false);
         }
     });
-    
+
     // --- Initial Load ---
-    loadDashboardData();
+    // --- Initial Load ---
+    switchView('dashboard');
+
 });

@@ -5,32 +5,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LearnBuddy - Sign In</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/index.css"> <!-- Added for V5 base styles -->
+    <link rel="stylesheet" href="css/auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"> <!-- Ensured FontAwesome -->
 </head>
 
-<body class="auth-body">
-    <!-- Navigation -->
-    <nav class="navbar navbar-auth">
-        <div class="nav-container">
-            <a href="index.html" class="nav-logo">
-                <i class="fas fa-robot"></i>
-                <span>LearnBuddy</span>
-            </a>
-        </div>
-    </nav>
+<body> <!-- Removed auth-body class, V5 styles will handle body -->
+
+    <!-- V5 Aurora Background -->
+    <div class="aurora-background-v5">
+        <div class="aurora-shape aurora-1"></div>
+        <div class="aurora-shape aurora-2"></div>
+        <div class="aurora-shape aurora-3"></div>
+    </div>
+
+    <!-- V5 Floating Navigation (Simplified for Auth) -->
+    <div class="navbar-container" id="navbar-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">
+                    <div class="logo-icon-v5">
+                        <div class="shape1"></div>
+                        <div class="shape2"></div>
+                    </div>
+                    <span>LearnBuddy</span>
+                </a>
+                <!-- No nav-menu items for auth page -->
+            </div>
+        </nav>
+    </div>
 
     <!-- Auth Container -->
     <div class="auth-container">
-        <div class="auth-background">
-            <div class="auth-shapes">
-                <div class="auth-shape auth-shape-1"></div>
-                <div class="auth-shape auth-shape-2"></div>
-                <div class="auth-shape auth-shape-3"></div>
-            </div>
-        </div>
-
+        <!-- Old auth-background div removed, aurora background is now global -->
         <div class="auth-content">
             <div class="auth-card">
                 <div class="auth-header">
@@ -62,7 +70,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-auth">
+                    <button type="submit" class="btn btn-primary btn-auth"> <!-- Will use V5 .btn-primary styles -->
                         <i class="fas fa-sign-in-alt"></i>
                         <span>Sign In</span>
                     </button>
@@ -100,7 +108,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-auth">
+                    <button type="submit" class="btn btn-primary btn-auth"> <!-- Will use V5 .btn-primary styles -->
                         <i class="fas fa-user-plus"></i>
                         <span>Create Account</span>
                     </button>
