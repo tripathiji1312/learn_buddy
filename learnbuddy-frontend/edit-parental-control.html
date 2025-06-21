@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Parental Controls - LearnBuddy</title>
+    <link rel="stylesheet" href="css/index2.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Floating Navigation -->
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">
+                    <div class="logo-icon-v5">
+                        <div class="shape1"></div>
+                        <div class="shape2"></div>
+                    </div>
+                    <span>LearnBuddy</span>
+                </a>
+                <div class="nav-menu">
+                     <a href="parental-control.html" class="nav-link"><i class="fas fa-arrow-left"></i> View Settings</a>
+                     <a href="profile.html" class="nav-link">My Profile</a>
+                     <button type="submit" form="editParentalControlsForm" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <section class="page-main-content">
+        <div class="aurora-background-v5">
+            <div class="aurora-shape aurora-1"></div>
+            <div class="aurora-shape aurora-2"></div>
+            <div class="aurora-shape aurora-3"></div>
+        </div>
+        <div class="container">
+            <h1 class="page-header-title">Edit Parental Controls</h1>
+            <p class="page-header-subtitle">Customize learning experience for <strong>Jamie's (jamie_learns)</strong> account.</p>
+
+            <form class="form-container" id="editParentalControlsForm">
+                <div class="form-section">
+                    <h3><i class="fas fa-clock"></i> Daily Time Limits</h3>
+                    <div class="form-group">
+                        <label for="weekdayLimit">Weekday Time Limit</label>
+                        <select id="weekdayLimit" name="weekdayLimit">
+                            <option value="0.5">30 Minutes</option>
+                            <option value="1" selected>1 Hour</option>
+                            <option value="1.5">1 Hour 30 Minutes</option>
+                            <option value="2">2 Hours</option>
+                            <option value="unlimited">Unlimited</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="weekendLimit">Weekend Time Limit</label>
+                        <select id="weekendLimit" name="weekendLimit">
+                            <option value="1">1 Hour</option>
+                            <option value="1.5">1 Hour 30 Minutes</option>
+                            <option value="2" selected>2 Hours</option>
+                            <option value="3">3 Hours</option>
+                            <option value="unlimited">Unlimited</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-book"></i> Subject Focus</h3>
+                    <div class="form-group">
+                        <label>Allowed Subjects (Select all that apply)</label>
+                        <div class="form-group-checkbox">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="subjectMath" name="subjects" value="math" checked>
+                                <label for="subjectMath">Mathematics</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="subjectScience" name="subjects" value="science" checked>
+                                <label for="subjectScience">Science</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="subjectEnglish" name="subjects" value="english" checked>
+                                <label for="subjectEnglish">English / Language Arts</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="subjectHistory" name="subjects" value="history">
+                                <label for="subjectHistory">History / Social Studies</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="subjectArt" name="subjects" value="art">
+                                <label for="subjectArt">Arts & Creativity</label>
+                            </div>
+                             <div class="checkbox-item">
+                                <input type="checkbox" id="subjectCoding" name="subjects" value="coding">
+                                <label for="subjectCoding">Coding & Logic</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-filter"></i> Content Filtering</h3>
+                    <div class="form-group">
+                        <label for="contentAgeRating">Content Age Rating</label>
+                        <select id="contentAgeRating" name="contentAgeRating">
+                            <option value="6-8">Ages 6-8</option>
+                            <option value="9-12" selected>Ages 9-12</option>
+                            <option value="13+">Ages 13+</option>
+                            <option value="all">All Ages (No Filter)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="toggle-switch-label" for="strictFiltering">
+                            Enable Strict Content Filtering
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="strictFiltering" name="strictFiltering" checked>
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-comments"></i> Communication Settings</h3>
+                    <div class="form-group">
+                         <label class="toggle-switch-label" for="enableChat">
+                            Enable In-App Chat (Moderated)
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="enableChat" name="enableChat">
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                    </div>
+                     <div class="form-group">
+                         <label class="toggle-switch-label" for="enableFriendRequests">
+                            Allow Friend Requests
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="enableFriendRequests" name="enableFriendRequests">
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-envelope-open-text"></i> Progress Reports</h3>
+                    <div class="form-group">
+                        <label class="toggle-switch-label" for="sendWeeklyReports">
+                            Send Weekly Email Summaries
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="sendWeeklyReports" name="sendWeeklyReports" checked>
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="reportEmail">Email for Reports</label>
+                        <input type="email" id="reportEmail" name="reportEmail" value="parent@example.com">
+                    </div>
+                </div>
+
+
+                <div class="form-actions">
+                    <a href="parental-control.html" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="index.html" class="nav-logo">
+                         <div class="logo-icon-v5">
+                            <div class="shape1"></div>
+                            <div class="shape2"></div>
+                        </div>
+                        <span>LearnBuddy</span>
+                    </a>
+                    <p>AI-powered learning that adapts to you.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Product</h4>
+                        <a href="index.html#features-v3">Features</a>
+                        <a href="index.html#how-it-works">How It Works</a>
+                        <a href="#">Pricing</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Support</h4>
+                        <a href="#">Help Center</a>
+                        <a href="#">Contact Us</a>
+                        <a href="#">Privacy Policy</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Connect</h4>
+                        <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+                        <a href="#"><i class="fab fa-discord"></i> Discord</a>
+                        <a href="#"><i class="fab fa-github"></i> GitHub</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 LearnBuddy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             // Form submission logic (basic example)
+            const editParentalControlsForm = document.getElementById('editParentalControlsForm');
+            if(editParentalControlsForm) {
+                editParentalControlsForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // Add actual form submission logic here (e.g., fetch API call)
+                    alert('Parental control settings saved (simulated)!');
+                     // Potentially redirect to parental-control.html
+                     // window.location.href = 'parental-control.html';
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -5,19 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - LearnBuddy</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css"> <!-- Changed to index.css -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="admin-body">
+<body class="admin-body"> <!-- Added admin-body class for scoping -->
+
     <div class="admin-layout">
+        <!-- V5 Aurora Background: Moved inside admin-layout -->
+        <div class="aurora-background-v5">
+            <div class="aurora-shape aurora-1"></div>
+            <div class="aurora-shape aurora-2"></div>
+            <div class="aurora-shape aurora-3"></div>
+        </div>
+
         <!-- Sidebar Navigation -->
         <aside class="admin-sidebar">
             <div class="sidebar-header">
-                <a href="admin.html" class="nav-logo">
-                    <i class="fas fa-robot"></i>
+                <a href="admin.html" class="nav-logo admin-nav-logo"> <!-- Added admin-nav-logo for specific styling -->
+                     <div class="logo-icon-v5"> <!-- Using V5 logo structure -->
+                        <div class="shape1"></div>
+                        <div class="shape2"></div>
+                    </div>
                     <span>LearnBuddy</span>
                 </a>
                 <span class="admin-tag">Admin</span>
@@ -32,7 +43,10 @@
                 <a href="#" class="nav-item" data-view="questions">
                     <i class="fas fa-question-circle"></i><span>Questions</span>
                 </a>
-                <a href="#" id="admin-logout-btn" class="nav-item nav-item-logout">
+                <a href="admin-profile.html" class="nav-link">
+                    <i class="fas fa-user-shield"></i><span>Profile</span>
+                </a>
+                <a href="admin-login.html" id="admin-logout-btn" class="nav-link nav-item-logout">
                     <i class="fas fa-sign-out-alt"></i><span>Logout</span>
                 </a>
             </nav>
@@ -76,9 +90,6 @@
             <div id="users-view" class="admin-view">
                 <div class="view-header">
                     <h1>Manage Users</h1>
-                    <button id="add-user-btn" class="btn btn-primary">
-                        <i class="fas fa-user-plus"></i> Add New User
-                    </button>
                 </div>
                 <div class="admin-table-container">
                     <table class="admin-table">
@@ -93,7 +104,7 @@
                             </tr>
                         </thead>
                         <tbody id="users-table-body">
-                            <!-- User rows will be injected here -->
+                            <!-- User rows will be injected here by admin.js -->
                         </tbody>
                     </table>
                 </div>
@@ -119,7 +130,7 @@
                             </tr>
                         </thead>
                         <tbody id="questions-table-body">
-                            <!-- Question rows will be injected here -->
+                            <!-- Question rows will be injected here by admin.js -->
                         </tbody>
                     </table>
                 </div>
@@ -132,7 +143,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="question-modal-title">Add New Question</h3>
-                <button class="modal-close" id="question-modal-close-btn">×</button>
+                <button class="modal-close" id="question-modal-close-btn">&times;</button>
             </div>
             <form id="question-form">
                 <input type="hidden" id="question-id-input">
@@ -166,7 +177,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="user-modal-title">Add New User</h3>
-                <button class="modal-close" id="user-modal-close-btn">×</button>
+                <button class="modal-close" id="user-modal-close-btn">&times;</button>
             </div>
             <form id="user-form">
                 <input type="hidden" id="user-id-input">
@@ -206,7 +217,7 @@
     </div>
 
     <div id="loading-overlay" class="loading-overlay hidden">
-        <div class="spinner-large"></div>
+        <div class="spinner-v5"></div> <!-- Changed to a V5 spinner class -->
     </div>
 
     <script src="js/admin.js"></script>

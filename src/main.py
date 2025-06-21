@@ -9,6 +9,7 @@ import random
 from jose import jwt, JWTError
 from typing import List, Optional
 import os
+from fastapi.responses import JSONResponse
 
 # --- Import our custom modules ---
 # MODIFIED: Import the new, advanced functions
@@ -31,7 +32,7 @@ origins = [ "http://localhost", "http://localhost:5500", "http://127.0.0.1:5500"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -74,6 +75,7 @@ class QuestResponse(BaseModel):
 class UserStatsResponse(BaseModel):
     xp: int
     streak_count: int
+    last_login_date: datetime
 
 class AchievementResponse(BaseModel):
     name: str
@@ -290,12 +292,12 @@ def get_user_stats(current_user: User = Depends(get_current_user)):
     # This function is unchanged
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute("SELECT xp, streak_count FROM users WHERE id = %s", (current_user.id,))
+    cur.execute("SELECT xp, streak_count, last_login_date FROM users WHERE id = %s", (current_user.id,))
     stats = cur.fetchone()
     cur.close()
     conn.close()
     if not stats: raise HTTPException(status_code=404, detail="User not found.")
-    return UserStatsResponse(xp=stats['xp'], streak_count=stats['streak_count'])
+    return UserStatsResponse(xp=stats['xp'], streak_count=stats['streak_count'], last_login_date=stats['last_login_date'])
 
 @app.get("/quests/today", response_model=QuestResponse, summary="Get today's quest (Protected)", tags=["Learner"])
 def get_daily_quest(current_user: User = Depends(get_current_user)):
@@ -475,3 +477,10 @@ def delete_question(question_id: int, admin: UserInDB = Depends(get_current_admi
     cur.close()
     conn.close()
     return
+
+@app.get("/users/me", summary="Get current user's profile info", tags=["Learner"])
+def get_current_user_profile(current_user: UserInDB = Depends(get_current_user)):
+    return JSONResponse(content={
+        "username": current_user.username,
+        "email": current_user.email
+    })

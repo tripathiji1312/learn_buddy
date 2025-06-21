@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - LearnBuddy</title>
+    <link rel="stylesheet" href="css/index2.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Floating Navigation -->
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">
+                    <div class="logo-icon-v5">
+                        <div class="shape1"></div>
+                        <div class="shape2"></div>
+                    </div>
+                    <span>LearnBuddy</span>
+                </a>
+                <div class="nav-menu">
+                    <a href="profile.html" class="nav-link"><i class="fas fa-arrow-left"></i> View Profile</a>
+                    <a href="parental-control.html" class="nav-link">Parental Controls</a>
+                    <button type="submit" form="editProfileForm" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <section class="page-main-content">
+        <div class="aurora-background-v5">
+            <div class="aurora-shape aurora-1"></div>
+            <div class="aurora-shape aurora-2"></div>
+            <div class="aurora-shape aurora-3"></div>
+        </div>
+        <div class="container">
+            <h1 class="page-header-title">Edit Your Profile</h1>
+            <p class="page-header-subtitle">Keep your personal information and preferences up to date.</p>
+
+            <form class="form-container" id="editProfileForm">
+                <div class="form-section">
+                    <h3><i class="fas fa-user-circle"></i> Personal Information</h3>
+                    <div class="form-group">
+                        <label for="profilePicture">Profile Picture</label>
+                        <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
+                        <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>    
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" value="alexj" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" value="alex.j@example.com" disabled>
+                        <small style="color:var(--text-secondary); font-size:var(--font-size-xs); display:block; margin-top:var(--spacing-xs);">Email cannot be changed here. Contact support for assistance.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="ageGrade">Age / Grade Level</label>
+                        <select id="ageGrade" name="ageGrade">
+                            <option value="elementary_3">3rd Grade</option>
+                            <option value="elementary_4">4th Grade</option>
+                            <option value="elementary_5">5th Grade</option>
+                            <option value="middle_6">6th Grade</option>
+                            <option value="middle_7">7th Grade</option>
+                            <option value="middle_8">8th Grade</option>
+                            <option value="high_9">9th Grade</option>
+                            <option value="high_10" selected>10th Grade</option>
+                            <option value="high_11">11th Grade</option>
+                            <option value="high_12">12th Grade</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3><i class="fas fa-key"></i> Change Password</h3>
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="profile.html" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="index.html" class="nav-logo">
+                         <div class="logo-icon-v5">
+                            <div class="shape1"></div>
+                            <div class="shape2"></div>
+                        </div>
+                        <span>LearnBuddy</span>
+                    </a>
+                    <p>AI-powered learning that adapts to you.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Product</h4>
+                        <a href="index.html#features-v3">Features</a>
+                        <a href="index.html#how-it-works">How It Works</a>
+                        <a href="#">Pricing</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Support</h4>
+                        <a href="#">Help Center</a>
+                        <a href="#">Contact Us</a>
+                        <a href="#">Privacy Policy</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Connect</h4>
+                        <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+                        <a href="#"><i class="fab fa-discord"></i> Discord</a>
+                        <a href="#"><i class="fab fa-github"></i> GitHub</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 LearnBuddy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // JS for image preview on file select
+            const profilePictureInput = document.getElementById('profilePicture');
+            const avatarPreview = document.getElementById('avatarPreview');
+            if (profilePictureInput && avatarPreview) {
+                profilePictureInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            avatarPreview.src = e.target.result;
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            // Form submission logic (basic example)
+            const editProfileForm = document.getElementById('editProfileForm');
+            if(editProfileForm) {
+                editProfileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // Add actual form submission logic here (e.g., fetch API call)
+                    alert('Profile changes saved (simulated)!');
+                     // Potentially redirect to profile.html
+                     // window.location.href = 'profile.html';
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

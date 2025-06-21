@@ -62,9 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const apiFetch = async (endpoint, options = {}) => {
-        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (response.status === 401) { logout(); return; }
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers
+        });
+        if (response.status === 401) {
+            logout();
+            return;
+        }
         if (!response.ok) {
             const data = await response.json();
             throw new Error(data.detail || 'An API error occurred.');
@@ -109,12 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 1; i <= 5; i++) {
             const star = document.createElement('i');
             star.className = 'fas fa-star';
-            
+
             // Now the comparison is between two numbers (e.g., 1 <= 1)
             if (i <= numericLevel) {
                 star.classList.add('filled');
             }
-            
+
             difficultyStarsEl.appendChild(star);
         }
     };
@@ -132,12 +141,17 @@ document.addEventListener('DOMContentLoaded', () => {
             achievementsListEl.appendChild(item);
         });
     };
-    
+
     // --- Main Application Logic ---
     const getNextQuestion = async () => {
         showLoading('Preparing your personalized question...');
         try {
-            const data = await apiFetch('/next_question', { method: 'POST', body: JSON.stringify({ lesson_id: lessonId }) });
+            const data = await apiFetch('/next_question', {
+                method: 'POST',
+                body: JSON.stringify({
+                    lesson_id: lessonId
+                })
+            });
             currentQuestion = data;
             displayDifficulty(data.difficulty_level);
             questionTextEl.textContent = data.question_text;
@@ -145,8 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
             submitAnswerBtn.disabled = false;
             feedbackContainer.classList.add('hidden');
             switchToView('question');
-        } catch (error) { showError(error.message); } 
-        finally { hideLoading(); }
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            hideLoading();
+        }
     };
 
     const submitAnswer = async () => {
@@ -174,19 +191,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (result.is_correct) showCelebration('Correct!', `You earned +10 XP!`);
             if (result.quest_completed) setTimeout(() => showCelebration('Quest Complete!', `Awesome work!`), 1000);
-            
+
             // THE FIX: Do NOT call loadInitialData() here. It causes a race condition.
             // Data will be reloaded when the user returns to the dashboard.
-            
-        } catch (error) { 
-            showError(error.message); 
-            submitAnswerBtn.disabled = false; 
-        } 
-        finally { 
-            hideLoading(); 
+
+        } catch (error) {
+            showError(error.message);
+            submitAnswerBtn.disabled = false;
+        } finally {
+            hideLoading();
         }
     };
-    
+
     const loadInitialData = async () => {
         try {
             const [stats, quest, achievements] = await Promise.all([
@@ -210,12 +226,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 nextQuestionBtn.disabled = false;
                 nextQuestionBtn.textContent = 'Continue Quest';
             }
-            
+
             updateAchievementsUI(achievements);
-        } catch (error) { showError(`Failed to load dashboard data: ${error.message}`); }
+        } catch (error) {
+            showError(`Failed to load dashboard data: ${error.message}`);
+        }
     };
 
     // --- Accessibility Logic ---
+    const accessibilityToggleBtn = document.getElementById('accessibility-fab-toggle');
+    const accessibilityPopup = document.getElementById('accessibility-options-popup');
+
+    accessibilityToggleBtn.addEventListener('click', () => {
+        accessibilityPopup.classList.toggle('hidden');
+        const expanded = accessibilityToggleBtn.getAttribute('aria-expanded') === 'true';
+        accessibilityToggleBtn.setAttribute('aria-expanded', !expanded);
+    });
+
     const applyAccessibilitySettings = () => {
         const isHighContrast = localStorage.getItem('highContrast') === 'true';
         highContrastToggle.checked = isHighContrast;
@@ -223,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedFontSize = localStorage.getItem('fontSize');
         if (savedFontSize) rootEl.style.fontSize = savedFontSize;
     };
-    
+
     const changeFontSize = (amount) => {
         const currentSize = parseFloat(getComputedStyle(rootEl).fontSize);
         const newSize = currentSize + amount;
@@ -235,7 +262,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Initial Setup & Event Listeners ---
-    if (!token || !username) { window.location.href = 'auth.html'; return; }
+    if (!token || !username) {
+        window.location.href = 'auth.html';
+        return;
+    }
 
     logoutBtn.addEventListener('click', logout);
     nextQuestionBtn.addEventListener('click', getNextQuestion);
@@ -262,4 +292,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Load ---
     applyAccessibilitySettings();
     loadInitialData();
+});
+
+const loadUserProfile = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:8000/users/me', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            }
+        });
+
+        if (!response.ok) throw new Error("Unable to fetch profile");
+
+        const data = await response.json();
+        document.getElementById('profile-username').textContent = data.username;
+        document.getElementById('profile-email').textContent = data.email;
+        document.getElementById('account-username').textContent = data.username;
+        document.getElementById('account-email').textContent = data.email;
+    } catch (err) {
+        console.error("Profile loading failed", err);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadUserProfile();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const token = localStorage.getItem("accessToken");
+
+    fetch("http://localhost:8000/users/me/stats", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById("xp-value").textContent = data.xp;
+            document.getElementById("streak-value").textContent = data.streak_count;
+            const formattedDate = new Date(data.last_login_date).toLocaleString();
+            document.getElementById("last-login").textContent = formattedDate;
+        })
+        .catch(error => {
+            console.error("Error fetching profile stats:", error);
+        });
 });

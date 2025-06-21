@@ -5,60 +5,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LearnBuddy - Learning Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 
-<body class="app-body">
-    <!-- App Header -->
-    <header class="app-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="app-logo">
-                    <i class="fas fa-robot"></i>
+<body class="app-body high-contrast">
+    <!-- V5 Aurora Background -->
+    <div class="aurora-background-v5">
+        <div class="aurora-shape aurora-1"></div>
+        <div class="aurora-shape aurora-2"></div>
+        <div class="aurora-shape aurora-3"></div>
+    </div>
+
+    <!-- V5 Floating Navigation -->
+    <div class="navbar-container" id="navbar-container">
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="index.html" class="nav-logo">
+                    <div class="logo-icon-v5">
+                        <div class="shape1"></div>
+                        <div class="shape2"></div>
+                    </div>
                     <span>LearnBuddy</span>
-                </div>
-                <div class="user-greeting">
-                    <h2>Welcome back, <span id="username-display">Learner</span>!</h2>
-                    <p>Ready for today's learning adventure?</p>
-                </div>
-                <div class="accessibility-controls">
-                    <div class="control-group">
-                        <label for="high-contrast-toggle" class="sr-only">High Contrast</label>
-                        <i class="fas fa-adjust"></i>
-                        <label class="switch"><input type="checkbox" id="high-contrast-toggle"><span
-                                class="slider round"></span></label>
-                    </div>
-                    <div class="control-group">
-                        <i class="fas fa-text-height"></i>
-                        <button id="decrease-font-btn" class="font-control-btn"
-                            aria-label="Decrease font size">A-</button>
-                        <button id="increase-font-btn" class="font-control-btn"
-                            aria-label="Increase font size">A+</button>
-                    </div>
-                </div>
+                </a>
+                <!-- App-specific nav items could go here if needed in future -->
+
             </div>
-            <div class="header-right">
-                <div class="user-stats">
-                    <div class="stat-item"><i class="fas fa-fire"></i>
-                        <div class="stat-info"><span class="stat-value" id="streak-count">0</span><span
-                                class="stat-label">Day Streak</span></div>
-                    </div>
-                    <div class="stat-item"><i class="fas fa-star"></i>
-                        <div class="stat-info"><span class="stat-value" id="xp-count">0</span><span
-                                class="stat-label">XP</span></div>
-                    </div>
-                </div>
-                <button id="logout-btn" class="btn btn-outline"><i class="fas fa-sign-out-alt"></i>Logout</button>
-            </div>
-        </div>
-    </header>
+        </nav>
+    </div>
 
     <!-- Main Content -->
     <main class="app-main">
         <!-- Dashboard View -->
         <div id="dashboard-view" class="view active">
+             <div class="user-greeting-app">
+                <div class="nav-container">
+                <span style="padding-right: 315px;"><h2>Welcome back, <span id="username-display">Learner</span>!</h2>
+                <p>Ready for today's learning adventure?</p>
+            </span>
+            <div>
+                <a href="index.html">
+                <button id="back-to-dashboard-btn" class="btn btn-outline-v5"><i class="fas fa-home"></i>Home</button>
+                </a>
+                <a href="auth.html">
+                <button id="logout-btn" class="btn btn-outline-v5" style="margin-left: auto;"><i class="fas fa-sign-out-alt"></i>Logout</button>
+                </a>
+                <a href="profile.html">
+                <button id="profile-btn" class="btn btn-outline-v5" style="margin-left: auto;"><i class="fas fa-user"></i>Profile</button>
+                </a>
+                </div>
+                </div>
+            </div>
+            
             <div class="dashboard-grid">
                 <div class="quest-card">
                     <div class="quest-header">
@@ -76,9 +76,9 @@
                     <h3>Your Progress</h3>
                     <div class="progress-ring-container">
                         <svg class="progress-ring" width="120" height="120">
-                            <circle cx="60" cy="60" r="54" fill="none" stroke="#e0e0e0" stroke-width="6" />
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="gray" stroke-width="6" />
                             <circle id="progress-circle" class="progress-circle" cx="60" cy="60" r="54" fill="none"
-                                stroke="#667eea" stroke-width="6" stroke-dasharray="340" stroke-dashoffset="340" />
+                                stroke="var(--accent-glow)" stroke-width="6" stroke-dasharray="340" stroke-dashoffset="340" />
                         </svg>
                         <div class="progress-text"><span id="progress-percentage"
                                 class="progress-percentage">0%</span><span class="progress-label">Complete</span></div>
@@ -88,6 +88,16 @@
                                 class="stat-name">Correct</span></div>
                         <div class="progress-stat"><span id="total-questions" class="stat-number">0</span><span
                                 class="stat-name">Total</span></div>
+                    </div>
+                     <div class="user-stats-app">
+                        <div class="stat-item"><i class="fas fa-fire"></i>
+                            <div class="stat-info"><span class="stat-value" id="streak-count">0</span><span
+                                    class="stat-label">Day Streak</span></div>
+                        </div>
+                        <div class="stat-item"><i class="fas fa-star"></i>
+                            <div class="stat-info"><span class="stat-value" id="xp-count">0</span><span
+                                    class="stat-label">XP</span></div>
+                        </div>
                     </div>
                 </div>
                 <div class="achievements-card">
@@ -104,27 +114,20 @@
         <!-- Question View -->
         <div id="question-view" class="view">
             <div class="question-container">
-                <!-- THE FIX IS HERE -->
                 <div class="question-header">
-                    <button id="back-to-dashboard-btn" class="btn btn-outline"><i class="fas fa-arrow-left"></i>Back to
-                        Dashboard</button>
-                    <div id="question-meta" class="question-meta">
-                        <span>Difficulty:</span>
-                        <div id="difficulty-stars" class="difficulty-stars"></div>
-                        <span id="difficulty-number" class="difficulty-number"></span>
-                    </div>
+                        
                 </div>
                 <div class="question-card">
                     <div class="question-text" id="question-text">
                         <p>Loading your personalized question...</p>
                     </div>
                     <div class="answer-section">
-                        <div class="form-group"><label for="user-answer">Your Answer:</label><textarea id="user-answer"
+                        <div class="form-group"><label for="user-answer" class="sr-only">Your Answer:</label><textarea id="user-answer"
                                 placeholder="Type your answer here..." rows="4"></textarea></div>
                         <div class="answer-actions">
                             <button id="submit-answer-btn" class="btn btn-primary"><i
                                     class="fas fa-paper-plane"></i>Submit Answer</button>
-                            <button id="skip-question-btn" class="btn btn-outline"><i class="fas fa-forward"></i>Skip
+                            <button id="skip-question-btn" class="btn btn-outline-v5"><i class="fas fa-forward"></i>Skip
                                 Question</button>
                         </div>
                     </div>
@@ -168,12 +171,49 @@
         </div>
     </div>
     <div id="celebration" class="celebration hidden">
-        <div class="confetti"></div>
+        <div class="confetti"></div> <!-- Placeholder for actual confetti animation if added -->
         <div class="celebration-text">
             <h2 id="celebration-title">Awesome!</h2>
             <p id="celebration-message">You earned <span id="xp-earned">+10</span> XP!</p>
         </div>
     </div>
+    
+    <!-- Accessibility Controls (Example of re-integration, can be moved/styled better) -->
+    <div class="accessibility-controls-fab">
+        <button id="accessibility-fab-toggle" class="btn btn-primary" aria-label="Accessibility Settings" aria-expanded="false">
+            <i class="fas fa-universal-access"></i>
+        </button>
+        
+        <div class="accessibility-options" id="accessibility-options-popup">
+            
+             <div class="control-group">
+                <label for="high-contrast-toggle"><i class="fas fa-circle-half-stroke"></i></label>
+                <label class="switch">
+                    <input type="checkbox" id="high-contrast-toggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <br>
+            <div class="control-group">
+                <label><i class="fas fa-arrow-up"></i> T <i class="fas fa-arrow-down"></i></label>
+                <div>
+                <button id="decrease-font-btn" class="font-control-btn" aria-label="Decrease font size"><i class="fas fa-plus"></i></button>
+                <button id="increase-font-btn" class="font-control-btn" aria-label="Increase font size"><i class="fas fa-minus"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const fabToggle = document.getElementById('accessibility-fab-toggle');
+    const optionsPanel = document.querySelector('.accessibility-options');
+
+    fabToggle.addEventListener('click', () => {
+        optionsPanel.classList.toggle('active');
+    });
+    });
+    </script>
 
     <script src="js/app.js"></script>
 </body>
