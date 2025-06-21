@@ -37,8 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedbackTitle = document.getElementById('feedback-title');
     const feedbackMessage = document.getElementById('feedback-message');
     const similarityScoreEl = document.getElementById('similarity-score');
-    const difficultyStarsEl = document.getElementById('difficulty-stars');
+    // FIX: Add selectors for the new difficulty display elements
     const difficultyNumberEl = document.getElementById('difficulty-number');
+    const difficultyStarsEl = document.getElementById('difficulty-stars');
 
     // Modals & Celebrations
     const errorModal = document.getElementById('error-modal');
@@ -62,35 +63,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const apiFetch = async (endpoint, options = {}) => {
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        };
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            ...options,
-            headers
-        });
-        if (response.status === 401) {
-            logout();
-            return;
-        }
-        if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.detail || 'An API error occurred.');
-        }
+        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        if (response.status === 401) { logout(); return; }
+        if (!response.ok) { const data = await response.json(); throw new Error(data.detail || 'An API error occurred.'); }
         return response.status === 204 ? null : response.json();
     };
 
-    const showLoading = (message) => {
-        loadingText.textContent = message;
-        loadingOverlay.classList.remove('hidden');
-    };
+    const showLoading = (message) => { loadingText.textContent = message; loadingOverlay.classList.remove('hidden'); };
     const hideLoading = () => loadingOverlay.classList.add('hidden');
-
-    const showError = (message) => {
-        errorModalText.textContent = message;
-        errorModal.classList.remove('hidden');
-    };
+    const showError = (message) => { errorModalText.textContent = message; errorModal.classList.remove('hidden'); };
     const closeErrorModal = () => errorModal.classList.add('hidden');
 
     const switchToView = (viewName) => {
@@ -99,38 +81,37 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showCelebration = (title, message) => {
-        celebrationTitle.textContent = title;
-        celebrationMessage.innerHTML = message;
+        celebrationTitle.textContent = title; celebrationMessage.innerHTML = message;
         celebrationEl.classList.remove('hidden');
         setTimeout(() => celebrationEl.classList.add('hidden'), 2500);
     };
 
     // --- UI Update Functions ---
-    // NEW, CORRECTED AND ROBUST VERSION
-    // NEW AND CORRECTED VERSION
+    // FIX: This function now populates the new difficulty elements in the question card
     const displayDifficulty = (level) => {
-        // THE FIX: Convert the 'level' to a number immediately.
         const numericLevel = parseInt(level, 10);
+        if (isNaN(numericLevel)) return;
 
-        difficultyNumberEl.textContent = `Lvl ${numericLevel}`;
-        difficultyStarsEl.innerHTML = '';
-
-        for (let i = 1; i <= 5; i++) {
-            const star = document.createElement('i');
-            star.className = 'fas fa-star';
-
-            // Now the comparison is between two numbers (e.g., 1 <= 1)
-            if (i <= numericLevel) {
-                star.classList.add('filled');
+        if (difficultyNumberEl) {
+            difficultyNumberEl.textContent = `Lvl ${numericLevel}`;
+        }
+        if (difficultyStarsEl) {
+            difficultyStarsEl.innerHTML = ''; // Clear existing stars
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('i');
+                star.className = 'fas fa-star';
+                if (i <= numericLevel) {
+                    star.classList.add('filled');
+                }
+                difficultyStarsEl.appendChild(star);
             }
-
-            difficultyStarsEl.appendChild(star);
         }
     };
-
+    
     const updateAchievementsUI = (achievements) => {
+        if (!achievementsListEl) return;
         if (achievements.length === 0) {
-            achievementsListEl.innerHTML = `<div class="achievement-placeholder"><i class="fas fa-trophy"></i><p>Answer questions correctly to unlock achievements!</p></div>`;
+            achievementsListEl.innerHTML = `<div class="achievement-placeholder"><i class="fas fa-trophy"></i><p>Answer questions to unlock achievements!</p></div>`;
             return;
         }
         achievementsListEl.innerHTML = '';
@@ -148,16 +129,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await apiFetch('/next_question', {
                 method: 'POST',
-                body: JSON.stringify({
-                    lesson_id: lessonId
-                })
+                body: JSON.stringify({ lesson_id: lessonId })
             });
             currentQuestion = data;
-            displayDifficulty(data.difficulty_level);
+            displayDifficulty(data.difficulty_level); // This will now update the new elements
             questionTextEl.textContent = data.question_text;
             userAnswerTextarea.value = '';
             submitAnswerBtn.disabled = false;
             feedbackContainer.classList.add('hidden');
+            // FIX: This is the core of the view switching logic
             switchToView('question');
         } catch (error) {
             showError(error.message);
@@ -186,15 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackIcon.className = result.is_correct ? 'fas fa-check-circle' : 'fas fa-times-circle';
             feedbackContainer.classList.add(result.is_correct ? 'correct' : 'incorrect');
             feedbackTitle.textContent = result.is_correct ? 'Great job!' : 'Not quite';
-            feedbackMessage.textContent = result.is_correct ? "That's the right idea!" : "That wasn't the answer we were looking for, but keep trying!";
+            feedbackMessage.textContent = result.is_correct ? "That's the right idea!" : "That wasn't the answer we were looking for.";
             similarityScoreEl.textContent = `${Math.round(result.similarity_score * 100)}%`;
 
             if (result.is_correct) showCelebration('Correct!', `You earned +10 XP!`);
             if (result.quest_completed) setTimeout(() => showCelebration('Quest Complete!', `Awesome work!`), 1000);
-
-            // THE FIX: Do NOT call loadInitialData() here. It causes a race condition.
-            // Data will be reloaded when the user returns to the dashboard.
-
+            
         } catch (error) {
             showError(error.message);
             submitAnswerBtn.disabled = false;
@@ -211,20 +188,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 apiFetch('/achievements')
             ]);
 
-            usernameDisplay.textContent = username;
-            xpCountEl.textContent = stats.xp;
-            streakCountEl.textContent = stats.streak_count;
+            if (usernameDisplay) usernameDisplay.textContent = username;
+            if (xpCountEl) xpCountEl.textContent = stats.xp;
+            if (streakCountEl) streakCountEl.textContent = stats.streak_count;
 
-            questTitleEl.textContent = quest.title;
-            if (quest.is_completed) {
-                questContentEl.innerHTML = `<div class="quest-placeholder"><i class="fas fa-check-circle" style="color: var(--success-color);"></i><h4>Quest Complete!</h4><p>You've earned your daily bonus! Feel free to keep practicing.</p></div>`;
-                nextQuestionBtn.disabled = false;
-                nextQuestionBtn.textContent = 'Practice More';
-            } else {
-                const progressPercent = (quest.current_progress / quest.completion_target) * 100;
-                questContentEl.innerHTML = `<p class="quest-description">${quest.description}</p><div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div><p class="quest-progress">${quest.current_progress} / ${quest.completion_target}</p>`;
-                nextQuestionBtn.disabled = false;
-                nextQuestionBtn.textContent = 'Continue Quest';
+            if (questTitleEl) questTitleEl.textContent = quest.title;
+            if (questContentEl) {
+                if (quest.is_completed) {
+                    questContentEl.innerHTML = `<div class="quest-placeholder"><i class="fas fa-check-circle" style="color: var(--success-color);"></i><h4>Quest Complete!</h4><p>Great job today. Feel free to practice more.</p></div>`;
+                    if (nextQuestionBtn) { nextQuestionBtn.disabled = false; nextQuestionBtn.textContent = 'Practice More'; }
+                } else {
+                    const progressPercent = (quest.current_progress / quest.completion_target) * 100;
+                    questContentEl.innerHTML = `<p class="quest-description">${quest.description}</p><div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div><p class="quest-progress">${quest.current_progress} / ${quest.completion_target}</p>`;
+                    if (nextQuestionBtn) { nextQuestionBtn.disabled = false; nextQuestionBtn.textContent = 'Continue Quest'; }
+                }
             }
 
             updateAchievementsUI(achievements);
@@ -236,21 +213,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Accessibility Logic ---
     const accessibilityToggleBtn = document.getElementById('accessibility-fab-toggle');
     const accessibilityPopup = document.getElementById('accessibility-options-popup');
-
-    accessibilityToggleBtn.addEventListener('click', () => {
-        accessibilityPopup.classList.toggle('hidden');
-        const expanded = accessibilityToggleBtn.getAttribute('aria-expanded') === 'true';
-        accessibilityToggleBtn.setAttribute('aria-expanded', !expanded);
-    });
-
+    if (accessibilityToggleBtn) {
+        accessibilityToggleBtn.addEventListener('click', () => {
+            accessibilityPopup.classList.toggle('hidden');
+            accessibilityToggleBtn.setAttribute('aria-expanded', !accessibilityToggleBtn.getAttribute('aria-expanded'));
+        });
+    }
     const applyAccessibilitySettings = () => {
         const isHighContrast = localStorage.getItem('highContrast') === 'true';
-        highContrastToggle.checked = isHighContrast;
+        if (highContrastToggle) highContrastToggle.checked = isHighContrast;
         document.body.classList.toggle('high-contrast', isHighContrast);
         const savedFontSize = localStorage.getItem('fontSize');
         if (savedFontSize) rootEl.style.fontSize = savedFontSize;
     };
-
     const changeFontSize = (amount) => {
         const currentSize = parseFloat(getComputedStyle(rootEl).fontSize);
         const newSize = currentSize + amount;
@@ -262,82 +237,38 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Initial Setup & Event Listeners ---
-    if (!token || !username) {
-        window.location.href = 'auth.html';
-        return;
+    if (!token || !username) { window.location.href = 'auth.html'; return; }
+    
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    if (nextQuestionBtn) nextQuestionBtn.addEventListener('click', getNextQuestion);
+    if (submitAnswerBtn) submitAnswerBtn.addEventListener('click', submitAnswer);
+    if (skipQuestionBtn) skipQuestionBtn.addEventListener('click', getNextQuestion);
+    if (backToDashboardBtn) {
+        backToDashboardBtn.addEventListener('click', () => {
+            loadInitialData();
+            switchToView('dashboard');
+        });
     }
-
-    logoutBtn.addEventListener('click', logout);
-    nextQuestionBtn.addEventListener('click', getNextQuestion);
-    submitAnswerBtn.addEventListener('click', submitAnswer);
-    skipQuestionBtn.addEventListener('click', getNextQuestion);
-    backToDashboardBtn.addEventListener('click', () => {
-        loadInitialData();
-        switchToView('dashboard');
-    });
-    continueBtn.addEventListener('click', () => {
-        feedbackContainer.classList.add('hidden');
-        getNextQuestion();
-    });
-    errorModalCloseBtn.addEventListener('click', closeErrorModal);
-    errorModalConfirmBtn.addEventListener('click', closeErrorModal);
-
-    highContrastToggle.addEventListener('change', () => {
-        localStorage.setItem('highContrast', highContrastToggle.checked);
-        document.body.classList.toggle('high-contrast', highContrastToggle.checked);
-    });
-    increaseFontBtn.addEventListener('click', () => changeFontSize(2));
-    decreaseFontBtn.addEventListener('click', () => changeFontSize(-2));
+    if (continueBtn) {
+        continueBtn.addEventListener('click', () => {
+            feedbackContainer.classList.add('hidden');
+            getNextQuestion();
+        });
+    }
+    if (errorModalCloseBtn) errorModalCloseBtn.addEventListener('click', closeErrorModal);
+    if (errorModalConfirmBtn) errorModalConfirmBtn.addEventListener('click', closeErrorModal);
+    if (highContrastToggle) {
+        highContrastToggle.addEventListener('change', () => {
+            localStorage.setItem('highContrast', highContrastToggle.checked);
+            document.body.classList.toggle('high-contrast', highContrastToggle.checked);
+        });
+    }
+    if (increaseFontBtn) increaseFontBtn.addEventListener('click', () => changeFontSize(1));
+    if (decreaseFontBtn) decreaseFontBtn.addEventListener('click', () => changeFontSize(-1));
 
     // --- Initial Load ---
     applyAccessibilitySettings();
-    loadInitialData();
-});
-
-const loadUserProfile = async () => {
-    try {
-        const response = await fetch('http://127.0.0.1:8000/users/me', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-        });
-
-        if (!response.ok) throw new Error("Unable to fetch profile");
-
-        const data = await response.json();
-        document.getElementById('profile-username').textContent = data.username;
-        document.getElementById('profile-email').textContent = data.email;
-        document.getElementById('account-username').textContent = data.username;
-        document.getElementById('account-email').textContent = data.email;
-    } catch (err) {
-        console.error("Profile loading failed", err);
+    if (dashboardView && dashboardView.classList.contains('active')) {
+        loadInitialData();
     }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadUserProfile();
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    const token = localStorage.getItem("accessToken");
-
-    fetch("http://localhost:8000/users/me/stats", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error("Network response was not ok");
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById("xp-value").textContent = data.xp;
-            document.getElementById("streak-value").textContent = data.streak_count;
-            const formattedDate = new Date(data.last_login_date).toLocaleString();
-            document.getElementById("last-login").textContent = formattedDate;
-        })
-        .catch(error => {
-            console.error("Error fetching profile stats:", error);
-        });
 });
