@@ -28,4 +28,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Tell Docker what command to run when the container starts.
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000", "src.main:app"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:7860", "src.main:app"]
