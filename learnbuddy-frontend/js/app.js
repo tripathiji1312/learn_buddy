@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration & State ---
-    const API_BASE_URL = 'https://learnbuddy-backend-p92v.onrender.com';
+    const API_BASE_URL = 'https://tripathiji1312-learnbuddy-app.hf.space';
     const token = localStorage.getItem('accessToken');
     const username = localStorage.getItem('username');
     let currentQuestion = null;

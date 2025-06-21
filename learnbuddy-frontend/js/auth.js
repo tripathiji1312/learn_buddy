@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
-    const API_BASE_URL = 'https://learnbuddy-backend-p92v.onrender.com'; // Replace with your actual backend URL
+    const API_BASE_URL = 'https://tripathiji1312-learnbuddy-app.hf.space'; // Replace with your actual backend URL
 
     // --- Element Selections ---
     const loginForm = document.getElementById('login-form');
