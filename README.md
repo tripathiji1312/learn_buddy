@@ -1,8 +1,6 @@
-# LearnBuddy 🎓
-
 <div align="center">
   
-  ![LearnBuddy Logo](https://img.shields.io/badge/🎓-LearnBuddy-blue?style=for-the-badge&labelColor=darkblue&color=lightblue)
+  ![LearnBuddy Logo](./logo.png)
   
   **A free, open-source, AI-driven adaptive learning platform dedicated to making personalized education accessible to every child.**
   
@@ -11,12 +9,27 @@
   [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
   [![GitHub Stars](https://img.shields.io/github/stars/tripathiji1312/learn_buddy?style=for-the-badge&color=gold)](https://github.com/tripathiji1312/learn_buddy/stargazers)
   [![GitHub Forks](https://img.shields.io/github/forks/tripathiji1312/learn_buddy?style=for-the-badge&color=orange)](https://github.com/tripathiji1312/learn_buddy/network)
+  [![Live Demo](https://img.shields.io/badge/🌐-Live%20Demo-success?style=for-the-badge)](https://learn-buddy.netlify.app/)
   
   ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
   ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
   ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
   ![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
   ![AI](https://img.shields.io/badge/AI%20Powered-FF6B6B?style=for-the-badge&logo=brain&logoColor=white)
+  
+</div>
+
+---
+
+## 🌟 Try LearnBuddy Now!
+
+<div align="center">
+  
+  [![Try LearnBuddy](https://img.shields.io/badge/🚀-Try%20LearnBuddy%20Live-brightgreen?style=for-the-badge&logo=rocket)](https://learn-buddy.netlify.app/)
+  
+  **Experience the future of personalized learning today!**
+  
+  *No installation required - start learning immediately*
   
 </div>
 
@@ -57,14 +70,27 @@ This is a **community-driven project**. We believe that by working together, we 
 
 ---
 
-## 🎯 Quick Demo
+## 🎯 Live Demo & Quick Access
 
 <div align="center">
   
-  ![Demo](https://img.shields.io/badge/🎬-Live%20Demo%20Coming%20Soon-red?style=for-the-badge)
+  [![Live Demo](https://img.shields.io/badge/🎬-Experience%20LearnBuddy%20Live-blue?style=for-the-badge&logo=play)](https://learn-buddy.netlify.app/)
+  
+  **🌐 [Visit LearnBuddy Live](https://learn-buddy.netlify.app/)**
   
   *Experience LearnBuddy in action - personalized learning that adapts to you!*
   
+</div>
+
+### 🎮 Demo Credentials
+
+<div align="center">
+
+| 🎯 Access Level | 👤 Username | 🔐 Password | 🔗 Direct Link |
+|-----------------|-------------|-------------|----------------|
+| **🎓 Student** | `testuser` | `testpass` | [Student Portal](https://learn-buddy.netlify.app/) |
+| **⚙️ Admin** | `admin` | `adminpassword` | [Admin Panel](https://learn-buddy.netlify.app/admin-login.html) |
+
 </div>
 
 ---
@@ -94,12 +120,18 @@ Contributing to LearnBuddy means you're helping to build a more **equitable** an
   
 </div>
 
-### 📋 Prerequisites
+### 🌐 Option 1: Try Online (Recommended)
+
+Simply visit **[learn-buddy.netlify.app](https://learn-buddy.netlify.app/)** to start using LearnBuddy immediately!
+
+### 🛠️ Option 2: Local Development Setup
+
+**📋 Prerequisites**
 
 - ![Docker](https://img.shields.io/badge/Docker-Required-blue?logo=docker) **Docker & Docker Compose**: [Install Docker Desktop](https://www.docker.com/products/docker-desktop)
 - ![Git](https://img.shields.io/badge/Git-Required-orange?logo=git) **Git**: For cloning the repository
 
-### 🛠️ Installation & Setup
+**Installation Steps**
 
 **1️⃣ Fork & Clone the Repository**
 ```bash
@@ -121,7 +153,7 @@ docker-compose run --rm backend python scripts/seed_db.py
 - Install the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension in VS Code
 - Right-click on `index.html` and select **"Open with Live Server"**
 
-### 🌐 Usage
+### 🌐 Local Usage
 
 <div align="center">
 
@@ -233,10 +265,11 @@ Please read our `CONTRIBUTING.md` file for more detailed guidelines.
   ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
   ![Transformers](https://img.shields.io/badge/🤗%20Transformers-FFD21E?style=for-the-badge)
   
-  **DevOps**
+  **DevOps & Deployment**
   
   ![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
   ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+  ![Netlify](https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)
   
 </div>
 
@@ -263,6 +296,7 @@ Please read our `CONTRIBUTING.md` file for more detailed guidelines.
 <div align="center">
   
   [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/tripathiji1312/learn_buddy)
+  [![Live Site](https://img.shields.io/badge/Live%20Site-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://learn-buddy.netlify.app/)
   [![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](#)
   [![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](#)
   
@@ -290,7 +324,8 @@ Please read our `CONTRIBUTING.md` file for more detailed guidelines.
   
   If you find LearnBuddy helpful, please consider giving it a ⭐ on GitHub!
   
-  ![Star](https://img.shields.io/badge/⭐-Star%20This%20Repo-yellow?style=for-the-badge)
+  [![Star This Repo](https://img.shields.io/badge/⭐-Star%20This%20Repo-yellow?style=for-the-badge)](https://github.com/tripathiji1312/learn_buddy)
+  [![Try Live Demo](https://img.shields.io/badge/🚀-Try%20Live%20Demo-success?style=for-the-badge)](https://learn-buddy.netlify.app/)
   
   **Made with ❤️ by the LearnBuddy Community**
   
