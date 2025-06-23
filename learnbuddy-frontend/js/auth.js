@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
-    const API_BASE_URL = 'https://tripathiji1312-learnbuddy-app.hf.space'; // Replace with your actual backend URL
+    const API_BASE_URL = 'https://tripathiji1312-learnbuddy-app.hf.space';
 
     // --- Element Selections ---
     const loginForm = document.getElementById('login-form');
@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const authTitle = document.getElementById('auth-title');
     const authSubtitle = document.getElementById('auth-subtitle');
     const switchText = document.getElementById('switch-text');
-
     const loadingSpinner = document.getElementById('loading-spinner');
     const errorMessageContainer = document.getElementById('error-message');
     const errorTextSpan = document.getElementById('error-text');
@@ -19,12 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLoginMode = true;
 
     // --- Functions ---
-
-    /**
-     * Toggles the visibility of a password field.
-     * @param {string} fieldId - The ID of the password input field.
-     * @param {HTMLElement} toggleButton - The button element that triggers the toggle.
-     */
     window.togglePassword = (fieldId, toggleButton) => {
         const passwordField = document.getElementById(fieldId);
         const icon = toggleButton.querySelector('i');
@@ -39,13 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    /**
-     * Switches the view between the login and signup forms.
-     */
     window.switchAuthMode = () => {
         isLoginMode = !isLoginMode;
-        hideMessages(); // Hide any existing messages
-
+        hideMessages();
         if (isLoginMode) {
             loginForm.classList.remove('hidden');
             signupForm.classList.add('hidden');
@@ -63,72 +52,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    /**
-     * Displays a loading state.
-     * @param {boolean} isLoading - Whether to show or hide the loader.
-     */
-    const showLoading = (isLoading) => {
-        loadingSpinner.classList.toggle('hidden', !isLoading);
-    };
-    
-    /**
-     * Hides all feedback messages.
-     */
+    const showLoading = (isLoading) => loadingSpinner.classList.toggle('hidden', !isLoading);
     const hideMessages = () => {
         errorMessageContainer.classList.add('hidden');
         successMessageContainer.classList.add('hidden');
     };
-
-    /**
-     * Displays an error message.
-     * @param {string} message - The error message to display.
-     */
     const showError = (message) => {
         hideMessages();
         errorTextSpan.textContent = message;
         errorMessageContainer.classList.remove('hidden');
     };
-
-    /**
-     * Displays a success message.
-     * @param {string} message - The success message to display.
-     */
     const showSuccess = (message) => {
         hideMessages();
         successTextSpan.textContent = message;
         successMessageContainer.classList.remove('hidden');
     };
 
-
-    /**
-     * Handles the signup form submission.
-     * @param {Event} e - The form submission event.
-     */
     const handleSignup = async (e) => {
         e.preventDefault();
         hideMessages();
         showLoading(true);
-
         const formData = new FormData(signupForm);
         const userData = Object.fromEntries(formData.entries());
-
         try {
             const response = await fetch(`${API_BASE_URL}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userData),
             });
-
             const data = await response.json();
-
             if (!response.ok) {
                 throw new Error(data.detail || 'An unknown error occurred.');
             }
-
             showSuccess(`Account for ${data.username} created! Please log in.`);
-            // Automatically switch to login mode after successful signup
             setTimeout(switchAuthMode, 1500);
-
         } catch (error) {
             showError(error.message);
         } finally {
@@ -136,38 +93,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    /**
-     * Handles the login form submission.
-     * @param {Event} e - The form submission event.
-     */
     const handleLogin = async (e) => {
         e.preventDefault();
         hideMessages();
         showLoading(true);
-
         const formData = new FormData(loginForm);
-        // The /token endpoint expects 'x-www-form-urlencoded' data.
         const urlEncodedData = new URLSearchParams(formData);
-
         try {
             const response = await fetch(`${API_BASE_URL}/token`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: urlEncodedData,
             });
-
             const data = await response.json();
-
             if (!response.ok) {
                 throw new Error(data.detail || 'Incorrect username or password.');
             }
             
-            // Store the token and redirect
-            localStorage.setItem('accessToken', data.access_token);
-            // Also store username for easy access in the app
+            // *** CHANGE HERE: Standardize the token key ***
+            localStorage.setItem('learnBuddyToken', data.access_token);
             const username = new FormData(loginForm).get('username');
             localStorage.setItem('username', username);
 
+            // Redirect to the main app dashboard
             window.location.href = 'app.html';
 
         } catch (error) {
