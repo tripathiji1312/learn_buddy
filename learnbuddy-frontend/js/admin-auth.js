@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE_URL = 'http://127.0.0.1:8000'; // Your backend URL
+    const API_BASE_URL = 'https://tripathiji1312-learnbuddy-app.hf.space'; // Your backend URL
     const loginForm = document.getElementById('admin-login-form');
     const loadingSpinner = document.getElementById('loading-spinner');
     const errorMessageContainer = document.getElementById('error-message');

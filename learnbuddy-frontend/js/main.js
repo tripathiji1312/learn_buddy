@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://tripathiji1312-learnbuddy-app.hf.space';
 function getToken() { return localStorage.getItem('learnbuddy_token'); }
 function showStatus(message, isError = false) {
     const el = document.getElementById('status-notification') || document.createElement('div');

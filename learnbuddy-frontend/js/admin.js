@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Config & State ---
-    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const API_BASE_URL = 'https://tripathiji1312-learnbuddy-app.hf.space';
     const token = localStorage.getItem('adminAccessToken');
     let currentView = 'dashboard';
     let difficultyChart = null;
