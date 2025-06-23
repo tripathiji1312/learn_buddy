@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const celebrationMessage = document.getElementById('celebration-message');
 
     // Accessibility Elements
-    const highContrastToggle = document.getElementById('high-contrast-toggle');
+
     const increaseFontBtn = document.getElementById('increase-font-btn');
     const decreaseFontBtn = document.getElementById('decrease-font-btn');
 
@@ -63,16 +63,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const apiFetch = async (endpoint, options = {}) => {
-        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-        if (response.status === 401) { logout(); return; }
-        if (!response.ok) { const data = await response.json(); throw new Error(data.detail || 'An API error occurred.'); }
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers
+        });
+        if (response.status === 401) {
+            logout();
+            return;
+        }
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.detail || 'An API error occurred.');
+        }
         return response.status === 204 ? null : response.json();
     };
 
-    const showLoading = (message) => { loadingText.textContent = message; loadingOverlay.classList.remove('hidden'); };
+    const showLoading = (message) => {
+        loadingText.textContent = message;
+        loadingOverlay.classList.remove('hidden');
+    };
     const hideLoading = () => loadingOverlay.classList.add('hidden');
-    const showError = (message) => { errorModalText.textContent = message; errorModal.classList.remove('hidden'); };
+    const showError = (message) => {
+        errorModalText.textContent = message;
+        errorModal.classList.remove('hidden');
+    };
     const closeErrorModal = () => errorModal.classList.add('hidden');
 
     const switchToView = (viewName) => {
@@ -81,7 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showCelebration = (title, message) => {
-        celebrationTitle.textContent = title; celebrationMessage.innerHTML = message;
+        celebrationTitle.textContent = title;
+        celebrationMessage.innerHTML = message;
         celebrationEl.classList.remove('hidden');
         setTimeout(() => celebrationEl.classList.add('hidden'), 2500);
     };
@@ -107,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
-    
+
     const updateAchievementsUI = (achievements) => {
         if (!achievementsListEl) return;
         if (achievements.length === 0) {
@@ -129,7 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await apiFetch('/next_question', {
                 method: 'POST',
-                body: JSON.stringify({ lesson_id: lessonId })
+                body: JSON.stringify({
+                    lesson_id: lessonId
+                })
             });
             currentQuestion = data;
             displayDifficulty(data.difficulty_level); // This will now update the new elements
@@ -171,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (result.is_correct) showCelebration('Correct!', `You earned +10 XP!`);
             if (result.quest_completed) setTimeout(() => showCelebration('Quest Complete!', `Awesome work!`), 1000);
-            
+
         } catch (error) {
             showError(error.message);
             submitAnswerBtn.disabled = false;
@@ -196,11 +217,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (questContentEl) {
                 if (quest.is_completed) {
                     questContentEl.innerHTML = `<div class="quest-placeholder"><i class="fas fa-check-circle" style="color: var(--success-color);"></i><h4>Quest Complete!</h4><p>Great job today. Feel free to practice more.</p></div>`;
-                    if (nextQuestionBtn) { nextQuestionBtn.disabled = false; nextQuestionBtn.textContent = 'Practice More'; }
+                    if (nextQuestionBtn) {
+                        nextQuestionBtn.disabled = false;
+                        nextQuestionBtn.textContent = 'Practice More';
+                    }
                 } else {
                     const progressPercent = (quest.current_progress / quest.completion_target) * 100;
                     questContentEl.innerHTML = `<p class="quest-description">${quest.description}</p><div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div><p class="quest-progress">${quest.current_progress} / ${quest.completion_target}</p>`;
-                    if (nextQuestionBtn) { nextQuestionBtn.disabled = false; nextQuestionBtn.textContent = 'Continue Quest'; }
+                    if (nextQuestionBtn) {
+                        nextQuestionBtn.disabled = false;
+                        nextQuestionBtn.textContent = 'Continue Quest';
+                    }
                 }
             }
 
@@ -220,9 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     const applyAccessibilitySettings = () => {
-        const isHighContrast = localStorage.getItem('highContrast') === 'true';
-        if (highContrastToggle) highContrastToggle.checked = isHighContrast;
-        document.body.classList.toggle('high-contrast', isHighContrast);
         const savedFontSize = localStorage.getItem('fontSize');
         if (savedFontSize) rootEl.style.fontSize = savedFontSize;
     };
@@ -237,8 +261,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Initial Setup & Event Listeners ---
-    if (!token || !username) { window.location.href = 'auth.html'; return; }
-    
+    if (!token || !username) {
+        window.location.href = 'auth.html';
+        return;
+    }
+
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
     if (nextQuestionBtn) nextQuestionBtn.addEventListener('click', getNextQuestion);
     if (submitAnswerBtn) submitAnswerBtn.addEventListener('click', submitAnswer);
@@ -257,12 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (errorModalCloseBtn) errorModalCloseBtn.addEventListener('click', closeErrorModal);
     if (errorModalConfirmBtn) errorModalConfirmBtn.addEventListener('click', closeErrorModal);
-    if (highContrastToggle) {
-        highContrastToggle.addEventListener('change', () => {
-            localStorage.setItem('highContrast', highContrastToggle.checked);
-            document.body.classList.toggle('high-contrast', highContrastToggle.checked);
-        });
-    }
+
     if (increaseFontBtn) increaseFontBtn.addEventListener('click', () => changeFontSize(1));
     if (decreaseFontBtn) decreaseFontBtn.addEventListener('click', () => changeFontSize(-1));
 
@@ -271,4 +293,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dashboardView && dashboardView.classList.contains('active')) {
         loadInitialData();
     }
+});
+
+const loadUserProfile = async () => {
+    try {
+        const response = await fetch('https://tripathiji1312-learnbuddy-app.hf.space', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            }
+        });
+
+        if (!response.ok) throw new Error("Unable to fetch profile");
+
+        const data = await response.json();
+        document.getElementById('profile-username').textContent = data.username;
+        document.getElementById('profile-email').textContent = data.email;
+        document.getElementById('account-username').textContent = data.username;
+        document.getElementById('account-email').textContent = data.email;
+    } catch (err) {
+        console.error("Profile loading failed", err);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadUserProfile();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const token = localStorage.getItem("accessToken");
+
+    fetch("https://tripathiji1312-learnbuddy-app.hf.space", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById("xp-value").textContent = data.xp;
+            document.getElementById("streak-value").textContent = data.streak_count;
+            const formattedDate = new Date(data.last_login_date).toLocaleString();
+            document.getElementById("last-login").textContent = formattedDate;
+        })
+        .catch(error => {
+            console.error("Error fetching profile stats:", error);
+        });
 });

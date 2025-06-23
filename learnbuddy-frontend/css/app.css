@@ -53,15 +53,7 @@
 }
 
 /* --- High Contrast Mode --- */
-body.high-contrast {
-    --bg-dark: #000000;
-    --bg-card: #1a1a1a;
-    --border-color: #888;
-    --text-primary: #ffffff;
-    --text-secondary: #e0e0e0;
-    --accent-glow: #ff00ff;
-    --accent-cyan: #00ffff;
-}
+
 
 
 html {
@@ -147,7 +139,7 @@ body.app-body {
 .btn-outline-v5 {
     background: transparent;
     color: var(--text-secondary);
-    border: 1px solid var(--border-color);
+    border: 1px solid gray;
 }
 
 .btn-outline-v5:hover:not(:disabled) {
@@ -185,7 +177,7 @@ body.app-body {
     border-radius: 8px 2px; position: absolute; left: 0;
 }
 .logo-icon-v5 .shape2 {
-    width: 60%; height: 60%; background: #0A0A10; border-radius: 2px 8px;
+    width: 60%; height: 60%; background: #7b549b; border-radius: 2px 8px;
     position: absolute; right: 0; bottom: 0; box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
 }
 
